@@ -13,12 +13,14 @@
             --primary: #1a73e8;
             --text: #3c4043;
             --danger: #d93025;
+            --overlay-bg: rgba(0,0,0,0.4);
         }
         body.dark-mode {
             --bg-main: #121212;
             --bg-soft: #1e1e1e;
             --text: #e0e0e0;
             --border: #333333;
+            --overlay-bg: rgba(0,0,0,0.7);
         }
 
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -26,7 +28,7 @@
         
         /* Login Screen */
         #login-screen {
-            position: fixed; inset: 0; background: var(--bg-main); z-index: 5000;
+            position: fixed; inset: 0; background: var(--bg-main); z-index: 9999;
             display: flex; align-items: center; justify-content: center;
         }
         .login-card {
@@ -48,9 +50,8 @@
         /* Buttons & UI */
         .tab-btn{width:100%;padding:20px 25px;border:none;background:none;text-align:left;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);transition:0.2s}
         .tab-btn.active{color:var(--primary);background:rgba(26,115,232,0.1)}
-        .btn-ui{padding:8px 16px;border:1px solid var(--border);background:var(--bg-main);color:var(--text);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:0.2s}
+        .btn-ui{padding:8px 16px;border:1px solid var(--border);background:var(--bg-main);color:var(--text);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:0.2s; text-align: center;}
         .btn-ui:hover{background:var(--bg-soft)}
-        .btn-primary{background:var(--primary)!important;color:#fff!important;border:none!important}
         
         /* Table & Content */
         .toolbar{display:flex;align-items:center;gap:8px;background:var(--bg-soft);padding:8px 15px;border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;flex-shrink:0}
@@ -63,13 +64,16 @@
         .row-num{width:50px;background:var(--bg-soft);text-align:center;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;border-right:1px solid var(--border)}
 
         /* Sheets & Overlays */
-        .sheet{position:fixed;bottom:-100%;left:0;right:0;background:var(--bg-main);z-index:2000;border-radius:24px 24px 0 0;padding:20px;transition:0.4s cubic-bezier(0.4,0,0.2,1);max-width:600px;margin:0 auto;box-shadow:0 -5px 25px rgba(0,0,0,0.1)}
+        .sheet{position:fixed;bottom:-100%;left:0;right:0;background:var(--bg-main);z-index:5000;border-radius:24px 24px 0 0;padding:25px 20px;transition:0.4s cubic-bezier(0.4,0,0.2,1);max-width:600px;margin:0 auto;box-shadow:0 -5px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);}
         .sheet.active{bottom:0}
-        .sheet-handle{width:40px;height:4px;background:#e0e0e0;margin:0 auto 20px;border-radius:10px}
-        #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;backdrop-filter:blur(2px)}
+        .sheet-handle{width:50px;height:5px;background:#ddd;margin:0 auto 20px;border-radius:10px;cursor: pointer;}
+        
+        #overlay{display:none;position:fixed;inset:0;background:var(--overlay-bg);z-index:1050;backdrop-filter:blur(2px)}
         #overlay.active{display:block}
-        #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);background:#323232;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:6000;transition:0.3s}
+        
+        #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);background:#323232;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:10000;transition:0.3s}
         #toast.active{transform:translateX(-50%)translateY(0)}
+        
         .nav-box{display:flex;align-items:center;justify-content:space-around;gap:5px;padding:12px;background:var(--bg-soft);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:100}
     </style>
 </head>
@@ -94,7 +98,7 @@
     <div style="flex-grow: 1; overflow-y: auto;">
         <div id="menu-list"></div>
         <div style="padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-            <button class="tab-btn" id="btn-new-table" onclick="createNewTable()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); margin: 0 10px; width: calc(100% - 20px); border-radius: 12px;">TABEL BARU</button>
+            <button class="tab-btn" id="btn-table-mgmt" onclick="openTableManager()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); margin: 0 10px; width: calc(100% - 20px); border-radius: 12px;">PENGELOLA TABEL</button>
             <button class="tab-btn" onclick="toggleDarkMode()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); margin: 0 10px; width: calc(100% - 20px); border-radius: 12px;">GANTI TEMA</button>
         </div>
     </div>
@@ -103,37 +107,31 @@
     </div>
 </div>
 
-<header style="display:flex;align-items:center;justify-content:space-between;padding:10px 15px;background:#fff;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:100;font-family:sans-serif;">
+<header>
     <div style="display:flex;align-items:center;gap:12px;">
-        <button onclick="toggleSidebar()" style="background:#f0f2f5;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold;color:#444;">☰</button>
-        <div id="disp-title" style="font-weight:600;font-size:15px;color:#1a73e8;text-transform:uppercase;">Dashboard</div>
+        <button onclick="toggleSidebar()" style="background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold;color:var(--text);">☰</button>
+        <div id="disp-title" style="font-weight:600;font-size:15px;color:var(--primary);text-transform:uppercase;">Dashboard</div>
     </div>
-    
     <div style="display:flex;gap:8px;">
-        <button onclick="openPopUp(null)" style="background:#fff;border:1px solid #ddd;padding:8px 15px;border-radius:6px;cursor:pointer;font-size:13px;">OPSI</button>
-        <button id="btn-save-main" onclick="saveData()" style="background:#2563eb;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:bold;cursor:pointer;box-shadow:0 2px 4px rgba(37,99,235,0.2);">SAVE</button>
+        <button onclick="openPopUp(null)" style="background:var(--bg-main);border:1px solid var(--border);padding:8px 15px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text);">OPSI</button>
+        <button id="btn-save-main" onclick="saveData()" style="background:var(--primary);color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:bold;cursor:pointer;">SAVE</button>
     </div>
 </header>
 
-
-<div class="toolbar" style="display:flex; flex-wrap:wrap; gap:8px; padding:12px; background:#fff; border-bottom:2px solid #eee; font-family:sans-serif;">
-    
+<div class="toolbar">
     <div style="display:flex; align-items:center; gap:5px; width:100%;">
-        <input type="date" id="dateStart" style="flex:1; border:1px solid #ddd; padding:8px; border-radius:6px; font-size:12px;">
-        <span style="color:#999">-</span>
-        <input type="date" id="dateEnd" style="flex:1; border:1px solid #ddd; padding:8px; border-radius:6px; font-size:12px;">
-        <button onclick="findData()" style="background:#2563eb; color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px; height:35px;">FIND</button>
+        <input type="date" id="dateStart" style="flex:1; border:1px solid var(--border); padding:8px; border-radius:6px; font-size:12px; background:var(--bg-main); color:var(--text);">
+        <span style="color:var(--text)">-</span>
+        <input type="date" id="dateEnd" style="flex:1; border:1px solid var(--border); padding:8px; border-radius:6px; font-size:12px; background:var(--bg-main); color:var(--text);">
+        <button onclick="findData()" style="background:var(--primary); color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">FIND</button>
     </div>
-
     <div style="display:flex; gap:8px; width:100%; align-items:center; margin-top:4px;">
-        <button onclick="exportToExcel()" style="background:#f8fafc; border:1px solid #ddd; padding:8px 10px; border-radius:6px; font-size:11px; font-weight:600;">EXPORT</button>
-        <button onclick="document.getElementById('importFile').click()" style="background:#f8fafc; border:1px solid #ddd; padding:8px 10px; border-radius:6px; font-size:11px; font-weight:600;">IMPORT</button>
+        <button onclick="exportToExcel()" class="btn-ui" style="font-size:11px;">EXPORT</button>
+        <button onclick="document.getElementById('importFile').click()" class="btn-ui" style="font-size:11px;">IMPORT</button>
         <input type="file" id="importFile" hidden onchange="importFromExcel(event)">
-        
-        <input type="text" id="searchInp" placeholder="Cari..." oninput="doSearch()" style="flex-grow:1; border:1px solid #2563eb; padding:8px 12px; border-radius:20px; font-size:13px; outline:none; background:#f0f7ff; min-width:80px;">
+        <input type="text" id="searchInp" placeholder="Cari..." oninput="doSearch()" style="flex-grow:1; border:1px solid var(--primary); padding:8px 12px; border-radius:20px; font-size:13px; outline:none; background:var(--bg-soft); color:var(--text);">
     </div>
 </div>
-
 
 <div class="table-container">
     <table id="mainTable">
@@ -142,197 +140,40 @@
     </table>
 </div>
 
-<div class="nav-box" style="display:flex; align-items:center; justify-content:center; gap:15px; padding:15px; background:#fff; border-top:1px solid #eee; font-family:sans-serif;">
-    <button class="btn-ui" onclick="changePage(currentPage-1)" 
-        style="background:#f8fafc; border:1px solid #ddd; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600; color:#666; transition:0.2s;"
-        onmouseover="this.style.background='#eee'" onmouseout="this.style.background='#f8fafc'">
-        &laquo; PREV
-    </button>
-
-    <div id="page-info" style="font-size:13px; font-weight:700; color:#333; min-width:60px; text-align:center; background:#f0f7ff; padding:4px 10px; border-radius:12px; border:1px solid #d0e3ff;">
-        HAL 1
-    </div>
-
-    <button class="btn-ui" onclick="changePage(currentPage+1)" 
-        style="background:#f8fafc; border:1px solid #ddd; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600; color:#666; transition:0.2s;"
-        onmouseover="this.style.background='#eee'" onmouseout="this.style.background='#f8fafc'">
-        NEXT &raquo;
-    </button>
+<div class="nav-box">
+    <button class="btn-ui" onclick="changePage(currentPage-1)">&laquo; PREV</button>
+    <div id="page-info" style="font-size:13px; font-weight:700; color:var(--text); min-width:60px; text-align:center;">HAL 1</div>
+    <button class="btn-ui" onclick="changePage(currentPage+1)">NEXT &raquo;</button>
 </div>
-
-
-<style>
-    :root { --danger: #dc2626; --primary: #2563eb; }
-    
-    .sheet { 
-        position: fixed; 
-        bottom: -100%; 
-        left: 0; 
-        right: 0; 
-        background: #ffffff; 
-        padding: 25px 20px; 
-        z-index: 1000;
-        border-top: 1px solid #ddd;
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-        transition: bottom 0.3s ease-in-out;
-        font-family: sans-serif;
-    }
-
-    .sheet.active { bottom: 0; }
-
-    .sheet-handle { 
-        width: 50px; 
-        height: 4px; 
-        background: #ccc; 
-        border-radius: 2px; 
-        margin: -15px auto 20px; 
-        cursor: pointer;
-    }
-
-    .action-grid { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 10px; 
-    }
-
-    .btn-ui-sheet { 
-        border: 1px solid #ddd; 
-        background: #fff; 
-        padding: 18px; 
-        border-radius: 4px; 
-        font-weight: 600; 
-        font-size: 12px; 
-        cursor: pointer;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #333;
-    }
-
-    .btn-ui-sheet:active { 
-        background: #f0f0f0; 
-    }
-
-    /* Tombol Hapus mengambil lebar penuh di bawahnya */
-    #btn-del-row { 
-        grid-column: span 2; 
-        color: var(--danger); 
-        border-color: var(--danger);
-        margin-top: 5px;
-    }
-</style>
 
 <div id="sheet-menu" class="sheet">
-    <div class="sheet-handle" onclick="toggleSheet(false)"></div>
-    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; letter-spacing:2px; color:#000;">OPSI BARIS</div>
-    
-    <div class="action-grid">
-        <button class="btn-ui-sheet" onclick="execAction('add_row')">TAMBAH BARIS</button>
-        <button class="btn-ui-sheet" onclick="execAction('add_col')">TAMBAH KOLOM</button>
-        <button class="btn-ui-sheet" id="btn-del-row" onclick="execAction('del_row')">HAPUS BARIS</button>
+    <div class="sheet-handle" onclick="closeModal()"></div>
+    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">MANAJEMEN DATA</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="btn-ui" style="padding:18px; font-weight:bold;" onclick="handleExecAction('add_row')">TAMBAH BARIS</button>
+        <button class="btn-ui" style="padding:18px; font-weight:bold;" onclick="handleExecAction('add_col')">TAMBAH KOLOM</button>
+        <button class="btn-ui" id="btn-del-row" style="padding:18px; font-weight:bold; grid-column: span 2; color: var(--danger); border-color: var(--danger);" onclick="handleExecAction('del_row')">HAPUS BARIS</button>
     </div>
 </div>
-
-<script>
-    function toggleSheet(show) {
-        document.getElementById('sheet-menu').classList.toggle('active', show);
-    }
-
-    function execAction(act) {
-        // Jalankan logika ERP Anda di sini
-        console.log("Action Executed:", act);
-        toggleSheet(false);
-    }
-</script>
-</div>
-
-<style>
-    :root { --primary: #2563eb; }
-    
-    .sheet { 
-        position: fixed; 
-        bottom: -100%; 
-        left: 0; 
-        right: 0; 
-        background: #fff; 
-        padding: 25px 20px; 
-        z-index: 1001; 
-        border-top: 1px solid #ddd;
-        box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-        transition: bottom 0.3s ease-in-out;
-        font-family: sans-serif;
-    }
-
-    .sheet.active { bottom: 0; }
-
-    .sheet-handle { 
-        width: 50px; 
-        height: 4px; 
-        background: #ccc; 
-        border-radius: 2px; 
-        margin: -15px auto 20px; 
-    }
-
-    .filter-stack { 
-        display: flex; 
-        flex-direction: column; 
-        gap: 8px; 
-    }
-
-    .btn-filter { 
-        border: 1px solid #ddd; 
-        background: #fff; 
-        padding: 16px; 
-        border-radius: 4px; 
-        font-weight: 600; 
-        font-size: 12px; 
-        cursor: pointer;
-        text-align: left;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #333;
-    }
-
-    .btn-filter:active { 
-        background: #f0f7ff; 
-        border-color: var(--primary);
-    }
-
-    #btn-edit-col { 
-        color: var(--primary); 
-        border-color: #d0e3ff;
-        background: #f8faff;
-        margin-top: 10px;
-    }
-</style>
 
 <div id="sheet-filter" class="sheet">
-    <div class="sheet-handle"></div>
-    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; letter-spacing:2px;">FILTER & URUTKAN</div>
-    
-    <div class="filter-stack">
-        <button class="btn-filter" onclick="sortData('asc')">URUTKAN A - Z</button>
-        <button class="btn-filter" onclick="sortData('desc')">URUTKAN Z - A</button>
-        <button class="btn-filter" id="btn-edit-col" onclick="execAction('edit_header')">GANTI NAMA KOLOM</button>
+    <div class="sheet-handle" onclick="closeModal()"></div>
+    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">SORTING & KOLOM</div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('asc')">URUTKAN A - Z</button>
+        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('desc')">URUTKAN Z - A</button>
+        <button class="btn-ui" id="btn-edit-col-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--primary); border-color: var(--primary);" onclick="handleExecAction('edit_header')">GANTI NAMA KOLOM</button>
     </div>
 </div>
 
-<script>
-    function openFilter() {
-        document.getElementById('sheet-filter').classList.add('active');
-        if(document.getElementById('overlay')) document.getElementById('overlay').style.display = 'block';
-    }
-
-    function closeModal() {
-        document.getElementById('sheet-filter').classList.remove('active');
-        if(document.getElementById('overlay')) document.getElementById('overlay').style.display = 'none';
-    }
-
-    function sortData(order) {
-        console.log("Sorting order:", order);
-        closeModal();
-    }
-</script>
-
+<div id="sheet-table-manager" class="sheet">
+    <div class="sheet-handle" onclick="closeModal()"></div>
+    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">PENGELOLA TABEL</div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn-ui" style="padding:20px; font-weight:bold; color:var(--primary); border-color:var(--primary); background:rgba(26,115,232,0.05);" onclick="createNewTable()">+ BUAT TABEL BARU</button>
+        <button class="btn-ui" id="btn-del-table-ui" style="padding:20px; font-weight:bold; color:var(--danger); border-color:var(--danger); background:rgba(217,48,37,0.05);" onclick="deleteCurrentTable()">x HAPUS TABEL AKTIF</button>
+    </div>
+</div>
 
 <script>
     let activeKey = 'default';
@@ -344,7 +185,7 @@
     let dateFilter = { start: "", end: "" };
 
     let config = JSON.parse(localStorage.getItem('erp_clean_conf')) || {
-        default: { title: "DATA TRANSAKSI", cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
+        default: { title: "DASHBOARD UTAMA", cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
     };
     let dataStore = JSON.parse(localStorage.getItem('erp_clean_data')) || {
         default: [["2024-01-01", "Saldo Awal", "0", "0", "0"]]
@@ -354,28 +195,21 @@
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
         const m = document.getElementById('m');
-        const loginScreen = document.getElementById('login-screen');
-
         if (u === 'P' && p === 'p') {
-            m.style.color = 'green';
-            m.innerText = 'Login Berhasil!';
-            setTimeout(() => { loginScreen.style.display = 'none'; notify("Selamat Datang Admin"); }, 500);
+            document.getElementById('login-screen').style.display = 'none';
+            notify("Akses Admin");
         } else if (u === 'owner' && p === 'owner') {
             document.getElementById('btn-save-main').style.display = "none";
-            document.getElementById('btn-new-table').style.display = "none";
-            document.getElementById('btn-import').style.display = "none";
-            document.getElementById('btn-del-row').style.display = "none";
-            document.getElementById('btn-edit-col').style.display = "none";
-            loginScreen.style.display = 'none';
-            notify("Mode Owner: View Only");
+            document.getElementById('btn-table-mgmt').style.display = "none";
+            document.getElementById('login-screen').style.display = 'none';
+            notify("Akses Owner");
         } else {
-            m.style.color = 'red';
-            m.innerText = 'User/Password Salah!';
+            m.style.color = 'red'; m.innerText = 'Gagal!';
         }
     }
 
-    function logout() { if(confirm("Keluar dari sistem?")) location.reload(); }
-
+    function logout() { if(confirm("Keluar?")) location.reload(); }
+    
     function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
         localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode'));
@@ -397,8 +231,8 @@
 
         let cols = config[activeKey].cols;
         let hHtml = `<th style="width:50px">ID</th>`;
-        cols.forEach((c, i) => {
-            hHtml += `<th><div class="th-inner" onclick="openFilter(${i})"><span>${c}</span> <span>▼</span></div></th>`;
+        cols.forEach((c, i) => { 
+            hHtml += `<th><div class="th-inner" onclick="openFilter(${i})"><span>${c}</span> <span>▼</span></div></th>`; 
         });
         document.getElementById('table-head').innerHTML = hHtml;
 
@@ -407,6 +241,7 @@
         if(dateFilter.start && dateFilter.end) filtered = filtered.filter(i => i.row[0] >= dateFilter.start && i.row[0] <= dateFilter.end);
 
         let totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
+        if(currentPage > totalPages) currentPage = totalPages;
         let paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
         let bHtml = paginated.map((item) => `
@@ -415,49 +250,102 @@
                 ${item.row.map((cell, ci) => `<td><input type="text" value="${cell}" oninput="upd(${item.index},${ci},this.value)"></td>`).join('')}
             </tr>
         `).join('');
-
         document.getElementById('table-body').innerHTML = bHtml;
         document.getElementById('page-info').innerText = `HAL ${currentPage} / ${totalPages}`;
     }
 
-    function openPopUp(idx) { selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-    function openFilter(colIdx) { selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-    function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-    function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
+    function openPopUp(idx) { 
+        selectedRowIdx = idx; 
+        document.getElementById('sheet-menu').classList.add('active'); 
+        document.getElementById('overlay').classList.add('active'); 
+    }
 
-    function execAction(type) {
+    function openFilter(colIdx) { 
+        selectedColIdx = colIdx; 
+        document.getElementById('sheet-filter').classList.add('active'); 
+        document.getElementById('overlay').classList.add('active'); 
+    }
+
+    function openTableManager() {
+        document.getElementById('sheet-table-manager').classList.add('active');
+        document.getElementById('overlay').classList.add('active');
+        document.getElementById('sidebar').classList.remove('active');
+    }
+
+    function closeModal() { 
+        document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); 
+        document.getElementById('overlay').classList.remove('active'); 
+    }
+
+    function toggleSidebar() { 
+        document.getElementById('sidebar').classList.toggle('active'); 
+        document.getElementById('overlay').classList.toggle('active'); 
+    }
+
+    function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
+
+    function handleExecAction(type) {
         if (type === 'add_row') dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
-        if (type === 'add_col') { let n = prompt("NAMA KOLOM:"); if(n) { config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r => r.push("")); } }
-        if (type === 'edit_header') { let n = prompt("GANTI NAMA:", config[activeKey].cols[selectedColIdx]); if(n) config[activeKey].cols[selectedColIdx] = n.toUpperCase(); }
-        if (type === 'del_row' && selectedRowIdx !== null) { if(confirm("Hapus baris?")) dataStore[activeKey].splice(selectedRowIdx, 1); }
+        if (type === 'add_col') { 
+            let n = prompt("NAMA KOLOM BARU:"); 
+            if(n) { config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r => r.push("")); } 
+        }
+        if (type === 'edit_header') { 
+            let n = prompt("GANTI NAMA KOLOM:", config[activeKey].cols[selectedColIdx]); 
+            if(n) config[activeKey].cols[selectedColIdx] = n.toUpperCase(); 
+        }
+        if (type === 'del_row' && selectedRowIdx !== null) { 
+            if(confirm("Hapus baris ini?")) dataStore[activeKey].splice(selectedRowIdx, 1); 
+        }
         render(); closeModal();
     }
 
-    function sortData(dir) {
+    // PERBAIKAN: SEKARANG BISA HAPUS TABEL APA PUN
+    function deleteCurrentTable() {
+        let title = config[activeKey].title;
+        if (confirm(`HAPUS TABEL "${title}"? Data tidak bisa kembali.`)) {
+            let keys = Object.keys(config);
+            if (keys.length <= 1) {
+                alert("Minimal harus ada 1 tabel!");
+                return;
+            }
+            
+            delete config[activeKey];
+            delete dataStore[activeKey];
+            saveData();
+            
+            // Pindah ke tabel pertama yang tersedia
+            activeKey = Object.keys(config)[0];
+            render();
+            closeModal();
+            notify("Tabel Terhapus");
+        }
+    }
+
+    function handleSortData(dir) {
         dataStore[activeKey].sort((a, b) => {
-            let vA = a[selectedColIdx], vB = b[selectedColIdx];
+            let vA = a[selectedColIdx] || "", vB = b[selectedColIdx] || "";
             return dir === 'asc' ? vA.toString().localeCompare(vB.toString()) : vB.toString().localeCompare(vA.toString());
         });
-        render(); closeModal(); notify("Diurutkan");
+        render(); closeModal();
     }
 
     function createNewTable() {
-        let n = prompt("NAMA TABEL:");
+        let n = prompt("NAMA TABEL BARU:");
         if (n) {
             let k = 't' + Date.now();
             config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] };
             dataStore[k] = [["", ""]];
-            activeKey = k; render(); toggleSidebar();
+            activeKey = k; render(); closeModal(); notify("Berhasil");
         }
     }
 
     function upd(r, c, v) { dataStore[activeKey][r][c] = v; }
     function changePage(p) { if(p >= 1) { currentPage = p; render(); } }
-    function switchTab(k) { activeKey = k; currentPage = 1; render(); toggleSidebar(); }
+    function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
     function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
     function findData() { dateFilter.start = document.getElementById('dateStart').value; dateFilter.end = document.getElementById('dateEnd').value; render(); }
-    function saveData() { localStorage.setItem('erp_clean_conf', JSON.stringify(config)); localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); notify("Data Disimpan"); }
+    function saveData() { localStorage.setItem('erp_clean_conf', JSON.stringify(config)); localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); notify("Tersimpan"); }
     
     function exportToExcel() {
         let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]);
@@ -470,10 +358,13 @@
         r.onload = function(ex) {
             let d = new Uint8Array(ex.target.result); let wb = XLSX.read(d, {type:'array'});
             let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-            if(rows.length > 0) { config[activeKey].cols = rows[0]; rows.shift(); dataStore[activeKey] = rows; render(); notify("Import Berhasil"); }
+            if(rows.length > 0) { 
+                config[activeKey].cols = rows[0]; rows.shift(); 
+                dataStore[activeKey] = rows; render(); notify("Import Sukses"); 
+            }
         }; r.readAsArrayBuffer(f);
     }
-
+    
     render();
 </script>
 </body>
