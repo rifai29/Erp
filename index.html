@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP BETA - No Freeze Mode</title>
+    <title>ERP BETA - Full Version</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -20,6 +20,7 @@
             --danger: #d93025;
             --success: #2e7d32;
             --overlay-bg: rgba(0,0,0,0.4);
+            --warning: #f29900;
         }
         body.dark-mode {
             --bg-main: #121212;
@@ -32,46 +33,15 @@
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-main);color:var(--text);overflow:auto;display:flex;flex-direction:column;min-height:100vh;transition:background .3s}
         
-        /* Custom Styling untuk Kalender */
-        .flatpickr-calendar { 
-            border-radius: 15px !important; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
-            border: none !important;
-            overflow: hidden;
-        }
-        .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
-            background: var(--primary) !important;
-            border-color: var(--primary) !important;
-        }
-        .flatpickr-day.inRange {
-            background: var(--primary-light) !important;
-            border-color: transparent !important;
-            box-shadow: -5px 0 0 var(--primary-light), 5px 0 0 var(--primary-light) !important;
-        }
+        .flatpickr-calendar { border-radius: 15px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; border: none !important; }
+        .flatpickr-day.selected { background: var(--primary) !important; border-color: var(--primary) !important; }
+        .flatpickr-clear-button { width: 100%; background: var(--danger); color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
 
-        .flatpickr-clear-button {
-            width: 100%;
-            background: var(--danger);
-            color: white;
-            border: none;
-            padding: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            font-size: 13px;
-        }
-
-        #login-screen {
-            position: fixed; inset: 0; background: var(--bg-main); z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .login-card {
-            background: var(--bg-main); padding: 40px; border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 360px; 
-            text-align: center; border: 1px solid var(--border);
-        }
+        #login-screen { position: fixed; inset: 0; background: var(--bg-main); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-card { background: var(--bg-main); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 360px; text-align: center; border: 1px solid var(--border); }
 
         header{padding:0 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--bg-main);height:50px;justify-content:space-between;flex-shrink:0}
+        
         #sidebar { 
             width: 280px; background: var(--bg-main); position: fixed; left: -280px; height: 100%; 
             transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1100; border-radius: 0 30px 30px 0; 
@@ -80,31 +50,24 @@
         #sidebar.active { left: 0; }
         .sidebar-header { padding: 30px 25px 10px; font-weight: 800; font-size: 18px; color: var(--text); letter-spacing: 1px; }
 
-        .tab-btn{width:100%;padding:20px 25px;border:none;background:none;text-align:left;cursor:pointer;font-size:16px;font-weight:700;color:var(--text);transition:0.2s}
-        .tab-btn.active{color:var(--primary);background:rgba(26,115,232,0.1)}
+        .cat-group { border-bottom: 1px solid var(--border); }
+        .cat-header {
+            width: 100%; padding: 15px 25px; background: var(--bg-soft); border: none;
+            text-align: left; font-weight: 800; font-size: 12px; color: #888;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            text-transform: uppercase;
+        }
+        .cat-content { display: none; }
+        .cat-content.active { display: block; }
+
+        .tab-btn{width:100%;padding:15px 25px;border:none;background:none;text-align:left;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);transition:0.2s}
+        .tab-btn.active{color:var(--primary);background:rgba(26,115,232,0.1); border-left: 4px solid var(--primary);}
+        
         .btn-ui{padding:8px 16px;border:1px solid var(--border);background:var(--bg-main);color:var(--text);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:0.2s; text-align: center;}
-        .btn-ui:hover{background:var(--bg-soft)}
         
         .toolbar{display:flex;flex-direction:column;gap:8px;background:var(--bg-soft);padding:12px 15px;border-bottom:1px solid var(--border);flex-shrink:0}
-        
-        .date-input-container {
-            display: flex;
-            align-items: center;
-            background: var(--bg-main);
-            border: 1px solid var(--primary);
-            border-radius: 10px;
-        }
-        #dateRangePicker {
-            flex-grow: 1;
-            border: none;
-            padding: 12px;
-            font-size: 13px;
-            background: transparent;
-            color: var(--text);
-            font-weight: 600;
-            outline: none;
-            text-align: center;
-        }
+        .date-input-container { display: flex; align-items: center; background: var(--bg-main); border: 1px solid var(--primary); border-radius: 10px; }
+        #dateRangePicker { flex-grow: 1; border: none; padding: 12px; font-size: 13px; background: transparent; color: var(--text); font-weight: 600; outline: none; text-align: center; }
 
         .table-container{flex-grow:1;overflow:auto;background:var(--bg-main); position: relative;}
         table{border-collapse:collapse;width:100%;table-layout: fixed;}
@@ -112,44 +75,42 @@
         .th-inner{display:flex;align-items:center;justify-content:space-between;padding:10px;cursor:pointer}
         
         td{border:1px solid var(--border);padding:0;height:48px; width: 130px;}
-        td input{border:none;padding:0 10px;font-size:13px;outline:none;background:transparent;width:100%;height:100%;color:var(--text); text-overflow: ellipsis;}
+        td input{border:none;padding:0 10px;font-size:13px;outline:none;background:transparent;width:100%;height:100%;color:var(--text);}
         
-        /* Kolom ID - FREEZE DIHAPUS */
-        .row-num{
-            width:65px !important; 
-            background:var(--bg-soft); 
-            text-align:center; 
-            font-size:12px; 
-            font-weight:800; 
-            color:var(--primary); 
-            cursor:pointer; 
-            border-right:1px solid var(--border); 
-            /* position: sticky & left: 0 dibuang agar tidak freeze */
-            z-index: 5;
-            user-select: none;
-            transition: 0.2s;
-        }
-        .row-num:active { background: var(--primary-light); opacity: 0.7; }
+        .row-num{width:65px !important; background:var(--bg-soft); text-align:center; font-size:12px; font-weight:800; color:var(--primary); cursor:pointer;}
 
-        #toast{
-            position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);
-            background:#323232;color:#fff;padding:12px 24px;border-radius:8px;
-            font-size:14px;z-index:10000;transition:0.3s;
-            white-space: nowrap; 
-            max-width: 90vw;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);background:#323232;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:10000;transition:0.3s;}
         #toast.active{transform:translateX(-50%)translateY(0)}
         
-        .nav-box{display:flex; flex-direction: column; gap:8px; padding:12px;background:var(--bg-soft);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:100}
-        .nav-row{display: flex; justify-content: space-around; align-items: center; width: 100%;}
-
-        .sheet{position:fixed;bottom:-100%;left:0;right:0;background:var(--bg-main);z-index:5000;border-radius:24px 24px 0 0;padding:25px 20px;transition:0.4s cubic-bezier(0.4,0,0.2,1);max-width:600px;margin:0 auto;box-shadow:0 -5px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);}
+        .nav-box{display:flex; justify-content: space-between; align-items: center; padding:12px; background:var(--bg-main); border-top:2px solid var(--primary); position:sticky; bottom:0; z-index:100}
+        
+        .sheet{position:fixed;bottom:-100%;left:0;right:0;background:var(--bg-main);z-index:5000;border-radius:24px 24px 0 0;padding:25px 20px;transition:0.4s cubic-bezier(0.4,0,0.2,1);max-width:600px;margin:0 auto;box-shadow:0 -5px 25px rgba(0,0,0,0.2); border: 1px solid var(--border); max-height: 85vh; overflow-y: auto;}
         .sheet.active{bottom:0}
-        .sheet-handle{width:50px;height:5px;background:#ddd;margin:0 auto 20px;border-radius:10px;cursor: pointer;}
+        .sheet-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        .close-btn{background:var(--bg-soft); border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer; color:var(--danger);}
+
         #overlay{display:none;position:fixed;inset:0;background:var(--overlay-bg);z-index:1050;backdrop-filter:blur(2px)}
         #overlay.active{display:block}
+
+        .cat-item-select { padding: 15px; border: 1px solid var(--border); margin-bottom: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .cat-item-select:hover { background: var(--primary-light); }
+
+        /* Tombol Pindah Link Khusus */
+        .btn-link-external {
+            display: block;
+            margin: 10px 25px;
+            padding: 12px;
+            background: var(--warning);
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 800;
+            border-radius: 12px;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(242, 153, 0, 0.3);
+            transition: 0.3s;
+        }
+        .btn-link-external:active { transform: scale(0.95); }
     </style>
 </head>
 <body>
@@ -157,10 +118,9 @@
 <div id="login-screen">
     <div class="login-card">
         <h2 style="margin-bottom: 5px; color: var(--primary);">ERP BETA</h2>
-        <p style="font-size: 12px; color: #888; margin-bottom: 25px;">Sistem Manajemen Data</p>
-        <input type="text" id="u" placeholder="Username" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-soft); color:var(--text);">
-        <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid var(--border); border-radius:8px; background:var(--bg-soft); color:var(--text);">
-        <button onclick="login()" style="background:var(--primary); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%;">MASUK</button>
+        <input type="text" id="u" placeholder="Username" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--border); border-radius:8px;">
+        <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid var(--border); border-radius:8px;">
+        <button onclick="login()" style="background:var(--primary); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:bold; width:100%;">MASUK</button>
     </div>
 </div>
 
@@ -169,21 +129,20 @@
 
 <div id="sidebar">
     <div class="sidebar-header">MENU UTAMA</div>
-    <div style="flex-grow: 1; overflow-y: auto;">
-        <div id="menu-list"></div>
-        <div style="padding-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-            <button class="tab-btn" id="btn-table-mgmt" onclick="openTableManager()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); margin: 0 10px; width: calc(100% - 20px); border-radius: 12px;">PENGELOLA TABEL</button>
-            <button class="tab-btn" onclick="toggleDarkMode()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); margin: 0 10px; width: calc(100% - 20px); border-radius: 12px;">GANTI TEMA</button>
-        </div>
-    </div>
-    <div style="padding-bottom: 20px; padding-top: 10px; border-top: 1px solid var(--border);">
-        <button class="tab-btn" onclick="logout()" style="background: rgba(217, 48, 37, 0.1); color: var(--danger); margin: 0 10px; width: calc(100% - 20px); border-radius: 12px; text-align: center;">LOGOUT</button>
+    
+    <a href="ynpw.html" class="btn-link-external">LAPORAN YNPW</a>
+    
+    <div style="flex-grow: 1; overflow-y: auto;" id="sidebar-content"></div>
+    <div style="padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
+        <button class="tab-btn" onclick="openTableManager()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 12px;">PENGELOLA TABEL</button>
+        <button class="tab-btn" onclick="toggleDarkMode()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 12px;">GANTI TEMA</button>
+        <button class="tab-btn" onclick="logout()" style="background: rgba(217, 48, 37, 0.1); color: var(--danger); border-radius: 12px; text-align: center;">LOGOUT</button>
     </div>
 </div>
 
 <header>
     <div style="display:flex;align-items:center;gap:12px;">
-        <button onclick="toggleSidebar()" style="background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:6px;cursor:pointer;font-weight:bold;color:var(--text);">☰</button>
+        <button onclick="toggleSidebar()" style="background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:6px;font-weight:bold;">MENU</button>
         <div id="disp-title" style="font-weight:600;font-size:15px;color:var(--primary);text-transform:uppercase;">Dashboard</div>
     </div>
 </header>
@@ -192,12 +151,11 @@
     <div class="date-input-container">
         <input type="text" id="dateRangePicker" placeholder="Tap untuk pilih rentang tanggal..." readonly>
     </div>
-
     <div style="display:flex; gap:8px; width:100%; align-items:center;">
         <button onclick="exportToExcel()" class="btn-ui" style="font-size:11px;">EXPORT</button>
         <button onclick="document.getElementById('importFile').click()" class="btn-ui" style="font-size:11px;">IMPORT</button>
         <input type="file" id="importFile" hidden onchange="importFromExcel(event)">
-        <input type="text" id="searchInp" placeholder="Cari..." oninput="doSearch()" style="flex-grow:1; border:1px solid var(--primary); padding:8px 12px; border-radius:20px; font-size:13px; outline:none; background:var(--bg-soft); color:var(--text);">
+        <input type="text" id="searchInp" placeholder="Cari..." oninput="doSearch()" style="flex-grow:1; border:1px solid var(--primary); padding:8px 12px; border-radius:20px; font-size:13px; outline:none;">
     </div>
 </div>
 
@@ -209,260 +167,195 @@
 </div>
 
 <div class="nav-box">
-    <div class="nav-row">
-        <button class="btn-ui" onclick="changePage(currentPage-1)">BARIS &laquo;</button>
-        <div id="page-info" style="font-size:12px; font-weight:700; color:var(--text);">BARIS 1</div>
-        <button class="btn-ui" onclick="changePage(currentPage+1)">&raquo; BARIS</button>
-    </div>
-    <div class="nav-row" id="col-nav-container" style="border-top: 1px dashed var(--border); padding-top: 8px;">
-        <button class="btn-ui" onclick="changeColPage(currentColPage-1)">KOLOM &laquo;</button>
-        <div id="col-page-info" style="font-size:12px; font-weight:700; color:var(--primary);">KOLOM 1-10</div>
-        <button class="btn-ui" onclick="changeColPage(currentColPage+1)">&raquo; KOLOM</button>
-    </div>
+    <button class="btn-ui" style="padding: 10px 20px;" onclick="changePage(currentPage-1)">KEMBALI</button>
+    <div id="page-info" style="font-size:13px; font-weight:800; color:var(--primary);">HALAMAN 1</div>
+    <button class="btn-ui" style="padding: 10px 20px;" onclick="changePage(currentPage+1)">LANJUT</button>
 </div>
 
 <div id="sheet-menu" class="sheet">
-    <div class="sheet-handle" onclick="closeModal()"></div>
-    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">MANAJEMEN BARIS</div>
+    <div class="sheet-header"><strong>OPSI BARIS</strong><button class="close-btn" onclick="closeModal()">TUTUP</button></div>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <button class="btn-ui" style="padding:18px; font-weight:bold;" onclick="handleExecAction('add_row')">TAMBAH BARIS</button>
-        <button class="btn-ui" style="padding:18px; font-weight:bold;" onclick="handleExecAction('add_col')">TAMBAH KOLOM</button>
-        <button class="btn-ui" id="btn-del-row" style="padding:18px; font-weight:bold; color: var(--danger); border-color: var(--danger);" onclick="handleExecAction('del_row')">HAPUS BARIS INI</button>
-        <button class="btn-ui" style="padding:18px; font-weight:bold; color: #fff; background: var(--danger); border: none;" onclick="handleExecAction('clear_all')">HAPUS SEMUA</button>
+        <button class="btn-ui" style="padding:18px;" onclick="handleExecAction('add_row')">TAMBAH BARIS</button>
+        <button class="btn-ui" style="padding:18px;" onclick="handleExecAction('add_col')">TAMBAH KOLOM</button>
+        <button class="btn-ui" style="padding:18px; color: var(--danger);" onclick="handleExecAction('del_row')">HAPUS BARIS INI</button>
+        <button class="btn-ui" style="padding:18px; color: #fff; background: var(--danger);" onclick="handleExecAction('clear_all')">HAPUS SEMUA</button>
     </div>
 </div>
 
 <div id="sheet-filter" class="sheet">
-    <div class="sheet-handle" onclick="closeModal()"></div>
-    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">SORTING & KOLOM</div>
+    <div class="sheet-header"><strong>SORTING & KOLOM</strong><button class="close-btn" onclick="closeModal()">TUTUP</button></div>
     <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('asc')">URUTKAN A - Z / LAMA - BARU</button>
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('desc')">URUTKAN Z - A / BARU - LAMA</button>
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--primary); border-color: var(--primary);" onclick="handleExecAction('edit_header')">GANTI NAMA KOLOM</button>
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--success); border-color: var(--success);" onclick="fillColCurrentDate()">ISI TANGGAL HARI INI</button>
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--danger); border-color: var(--danger);" onclick="handleExecAction('del_col')">HAPUS KOLOM INI</button>
+        <button class="btn-ui" style="padding:16px; text-align:left;" onclick="handleSortData('asc')">URUTKAN A - Z / LAMA - BARU</button>
+        <button class="btn-ui" style="padding:16px; text-align:left;" onclick="handleSortData('desc')">URUTKAN Z - A / BARU - LAMA</button>
+        <button class="btn-ui" style="padding:16px; text-align:left; color: var(--primary);" onclick="handleExecAction('edit_header')">GANTI NAMA KOLOM</button>
+        <button class="btn-ui" style="padding:16px; text-align:left; color: var(--success);" onclick="fillColCurrentDate()">ISI TANGGAL HARI INI</button>
+        <button class="btn-ui" style="padding:16px; text-align:left; color: var(--danger);" onclick="handleExecAction('del_col')">HAPUS KOLOM INI</button>
     </div>
 </div>
 
 <div id="sheet-table-manager" class="sheet">
-    <div class="sheet-handle" onclick="closeModal()"></div>
-    <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">PENGELOLA TABEL</div>
+    <div class="sheet-header"><strong>PENGELOLA TABEL</strong><button class="close-btn" onclick="closeModal()">TUTUP</button></div>
     <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button class="btn-ui" style="padding:20px; font-weight:bold; color:var(--primary); border-color:var(--primary); background:rgba(26,115,232,0.05);" onclick="createNewTable()">+ BUAT TABEL BARU</button>
-        <button class="btn-ui" id="btn-del-table-ui" style="padding:20px; font-weight:bold; color:var(--danger); border-color:var(--danger); background:rgba(217,48,37,0.05);" onclick="deleteCurrentTable()">x HAPUS TABEL AKTIF</button>
+        <button class="btn-ui" style="padding:15px; color:var(--primary);" onclick="createNewTable()">BUAT TABEL BARU</button>
+        <button class="btn-ui" style="padding:15px;" onclick="renameTable()">UBAH NAMA TABEL</button>
+        <button class="btn-ui" style="padding:15px; background:var(--primary-light);" onclick="openCatPicker()">PINDAH KATEGORI</button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn-ui" onclick="moveTable('up')">PINDAH KE ATAS</button>
+            <button class="btn-ui" onclick="moveTable('down')">PINDAH KE BAWAH</button>
+        </div>
+        <button class="btn-ui" style="padding:15px; color:var(--danger);" onclick="deleteCategory()">HAPUS KATEGORI</button>
+        <button class="btn-ui" style="padding:15px; color:var(--danger); border: 1px solid var(--danger);" onclick="deleteCurrentTable()">HAPUS TABEL AKTIF</button>
+    </div>
+</div>
+
+<div id="sheet-cat-picker" class="sheet" style="z-index: 6000;">
+    <div class="sheet-header"><strong>PILIH KATEGORI</strong><button class="close-btn" onclick="closeCatPicker()">KEMBALI</button></div>
+    <div id="cat-list-box" style="margin-bottom: 20px;"></div>
+    <div style="border-top: 1px solid var(--border); padding-top: 15px;">
+        <input type="text" id="newCatInp" placeholder="Nama Kategori Baru..." style="width:100%; padding:15px; border-radius:10px; border:1px solid var(--border);">
+        <button class="btn-ui" style="width:100%; margin-top:10px; background:var(--primary); color:white; padding:15px;" onclick="applyNewCat()">PINDAH KE KATEGORI INI</button>
     </div>
 </div>
 
 <script>
     let activeKey = 'default';
-    let currentPage = 1;
-    let currentColPage = 1;
-    let rowsPerPage = 10;
-    let colsPerPage = 10;
-    let selectedRowIdx = null;
-    let selectedColIdx = null;
-    let searchQuery = "";
+    let currentPage = 1, rowsPerPage = 10;
+    let selectedRowIdx = null, selectedColIdx = null, searchQuery = "";
     let dateFilter = { start: "", end: "" };
+    let openCats = JSON.parse(localStorage.getItem('erp_open_cats')) || ["UTAMA"];
 
     let config = JSON.parse(localStorage.getItem('erp_clean_conf')) || {
-        default: { title: "DASHBOARD UTAMA", cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
+        default: { title: "DASHBOARD UTAMA", category: "UTAMA", order: 0, cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
     };
     let dataStore = JSON.parse(localStorage.getItem('erp_clean_data')) || {
         default: [["2024-01-01", "Saldo Awal", "0", "0", "0"]]
     };
 
     const fp = flatpickr("#dateRangePicker", {
-        mode: "range",
-        dateFormat: "Y-m-d",
-        onReady: function(selectedDates, dateStr, instance) {
-            const clearBtn = document.createElement("div");
-            clearBtn.innerHTML = "HAPUS FILTER TANGGAL";
-            clearBtn.className = "flatpickr-clear-button";
-            clearBtn.onclick = () => {
-                dateFilter = { start: "", end: "" };
-                instance.clear(); 
-                instance.close();
-                render();
-                notify("Filter Rentang Tanggal Berhasil Dihapus");
-            };
-            instance.calendarContainer.appendChild(clearBtn);
+        mode: "range", dateFormat: "Y-m-d",
+        onReady: function(s, d, instance) {
+            const btn = document.createElement("div");
+            btn.innerHTML = "HAPUS FILTER TANGGAL"; btn.className = "flatpickr-clear-button";
+            btn.onclick = () => { dateFilter = {start:"", end:""}; instance.clear(); render(); };
+            instance.calendarContainer.appendChild(btn);
         },
-        onClose: function(selectedDates, dateStr, instance) {
-            if (selectedDates.length === 2) {
+        onClose: function(s, dateStr) {
+            if (s.length === 2) {
                 const dates = dateStr.split(" to ");
-                dateFilter.start = dates[0];
-                dateFilter.end = dates[1];
-                render();
+                dateFilter.start = dates[0]; dateFilter.end = dates[1]; render();
             }
         }
     });
 
-    function checkLoginStatus() {
-        if (sessionStorage.getItem('erp_is_logged') === 'true') {
-            document.getElementById('login-screen').style.display = 'none';
-        }
-    }
     function login() {
-        const u = document.getElementById('u').value;
-        const p = document.getElementById('p').value;
-        if (u === 'P' && p === 'p') { 
-            sessionStorage.setItem('erp_is_logged', 'true');
-            document.getElementById('login-screen').style.display = 'none'; 
-        } else { alert("Username atau Password Salah!"); }
+        const u = document.getElementById('u').value, p = document.getElementById('p').value;
+        if (u === 'P' && p === 'p') { sessionStorage.setItem('erp_is_logged', 'true'); document.getElementById('login-screen').style.display = 'none'; }
+        else { alert("Salah!"); }
     }
-    function logout() { if(confirm("Keluar?")) { sessionStorage.removeItem('erp_is_logged'); location.reload(); } }
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
-        localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode'));
-    }
-    if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
+    if (sessionStorage.getItem('erp_is_logged') === 'true') document.getElementById('login-screen').style.display = 'none';
 
-    function notify(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg; t.classList.add('active');
-        setTimeout(() => t.classList.remove('active'), 2000);
+    function autoSave() { localStorage.setItem('erp_clean_conf', JSON.stringify(config)); localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); }
+    
+    function renderSidebar() {
+        const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
+        let html = '';
+        cats.forEach(cat => {
+            const isOpen = openCats.includes(cat);
+            const tables = Object.keys(config).filter(k => (config[k].category || "UTAMA") === cat).sort((a,b) => (config[a].order || 0) - (config[b].order || 0));
+            html += `<div class="cat-group"><button class="cat-header" onclick="toggleCat('${cat}')">${cat} <span>${isOpen ? 'CLOSE' : 'OPEN'}</span></button>
+                <div class="cat-content ${isOpen ? 'active' : ''}">${tables.map(k => `<button class="tab-btn ${activeKey === k ? 'active' : ''}" onclick="switchTab('${k}')">${config[k].title}</button>`).join('')}</div></div>`;
+        });
+        document.getElementById('sidebar-content').innerHTML = html;
     }
-    function getToday() { return new Date().toISOString().split('T')[0]; }
-    function autoSave() {
-        localStorage.setItem('erp_clean_conf', JSON.stringify(config));
-        localStorage.setItem('erp_clean_data', JSON.stringify(dataStore));
+
+    function toggleCat(cat) {
+        if(openCats.includes(cat)) openCats = openCats.filter(c => c !== cat); else openCats.push(cat);
+        localStorage.setItem('erp_open_cats', JSON.stringify(openCats)); renderSidebar();
     }
 
     function render() {
-        document.getElementById('menu-list').innerHTML = Object.keys(config).map(k => 
-            `<button class="tab-btn ${activeKey === k ? 'active' : ''}" onclick="switchTab('${k}')">${config[k].title}</button>`
-        ).join('');
-
-        document.getElementById('disp-title').innerText = config[activeKey].title;
+        renderSidebar(); document.getElementById('disp-title').innerText = config[activeKey].title;
         let allCols = config[activeKey].cols;
-        let startCol = (currentColPage - 1) * colsPerPage;
-        let endCol = startCol + colsPerPage;
-        let visibleCols = allCols.slice(startCol, endCol);
-
         let hHtml = `<th class="row-num">ID</th>`;
-        visibleCols.forEach((c, i) => { 
-            hHtml += `<th><div class="th-inner" onclick="openFilter(${startCol + i})"><span>${c}</span> <span>▼</span></div></th>`; 
-        });
+        allCols.forEach((c, i) => { hHtml += `<th><div class="th-inner" onclick="openFilter(${i})">${c} EDIT</div></th>`; });
         document.getElementById('table-head').innerHTML = hHtml;
-
+        
         let filtered = dataStore[activeKey].map((row, index) => ({row, index}));
-        if(searchQuery) {
-            filtered = filtered.filter(i => i.row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
-        }
-        if(dateFilter.start && dateFilter.end) {
-            filtered = filtered.filter(i => {
-                let rowDate = i.row[0] ? i.row[0].toString().trim() : "";
-                return rowDate >= dateFilter.start && rowDate <= dateFilter.end;
-            });
-        }
-
+        if(searchQuery) filtered = filtered.filter(i => i.row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
+        if(dateFilter.start && dateFilter.end) filtered = filtered.filter(i => { let d = (i.row[0] || "").trim(); return d >= dateFilter.start && d <= dateFilter.end; });
+        
         let totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
-        if(currentPage > totalPages) currentPage = totalPages;
         let paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
-
-        let bHtml = paginated.map((item) => `
-            <tr>
-                <td class="row-num" onclick="openPopUp(${item.index})">${item.index + 1}</td>
-                ${item.row.slice(startCol, endCol).map((cell, ci) => `<td><input type="text" value="${cell}" oninput="upd(${item.index},${startCol + ci},this.value)"></td>`).join('')}
-            </tr>
-        `).join('');
-        document.getElementById('table-body').innerHTML = bHtml;
-
-        document.getElementById('page-info').innerText = `BARIS: ${currentPage} / ${totalPages}`;
-        document.getElementById('col-page-info').innerText = `KOLOM ${startCol + 1} - ${Math.min(endCol, allCols.length)}`;
-        document.getElementById('col-nav-container').style.display = allCols.length > colsPerPage ? 'flex' : 'none';
+        
+        document.getElementById('table-body').innerHTML = paginated.map(item => `<tr><td class="row-num" onclick="openPopUp(${item.index})">${item.index + 1}</td>
+            ${item.row.map((cell, ci) => `<td><input type="text" value="${cell}" oninput="upd(${item.index},${ci},this.value)"></td>`).join('')}</tr>`).join('');
+        
+        document.getElementById('page-info').innerText = `HALAMAN: ${currentPage} / ${totalPages}`;
     }
 
-    function changeColPage(p) {
-        let maxColPages = Math.ceil(config[activeKey].cols.length / colsPerPage);
-        if(p >= 1 && p <= maxColPages) { currentColPage = p; render(); }
+    // Sisanya fungsi teknis pengelola tabel
+    function openCatPicker() {
+        const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
+        let html = '<p style="font-size:12px; margin-bottom:10px; color:grey;">Pilih Kategori Yang Ada:</p>';
+        cats.forEach(c => { html += `<div class="cat-item-select" onclick="selectExistingCat('${c}')">FOLDER: ${c}</div>`; });
+        document.getElementById('cat-list-box').innerHTML = html;
+        document.getElementById('sheet-cat-picker').classList.add('active');
     }
-    function changePage(p) { 
-        let filteredCount = dataStore[activeKey].length;
-        let total = Math.ceil(filteredCount / rowsPerPage) || 1;
-        if(p >= 1 && p <= total) { currentPage = p; render(); } 
+    function selectExistingCat(catName) { config[activeKey].category = catName; autoSave(); render(); closeCatPicker(); closeModal(); }
+    function applyNewCat() { let val = document.getElementById('newCatInp').value; if(val) { selectExistingCat(val.toUpperCase()); document.getElementById('newCatInp').value = ""; } }
+    function closeCatPicker() { document.getElementById('sheet-cat-picker').classList.remove('active'); }
+    function renameTable() { let n = prompt("NAMA BARU:", config[activeKey].title); if(n){config[activeKey].title = n.toUpperCase(); autoSave(); render(); closeModal();} }
+    function moveTable(dir) {
+        let keys = Object.keys(config).filter(k => config[k].category === config[activeKey].category).sort((a,b) => (config[a].order || 0) - (config[b].order || 0));
+        let idx = keys.indexOf(activeKey);
+        if(dir==='up' && idx > 0) [config[keys[idx]].order, config[keys[idx-1]].order] = [config[keys[idx-1]].order, config[keys[idx]].order];
+        else if(dir==='down' && idx < keys.length-1) [config[keys[idx]].order, config[keys[idx+1]].order] = [config[keys[idx+1]].order, config[keys[idx]].order];
+        autoSave(); render();
     }
-    function switchTab(k) { activeKey = k; currentPage = 1; currentColPage = 1; render(); closeAll(); }
-
-    function fillColCurrentDate() {
-        if(selectedColIdx === null) return;
-        const today = getToday();
-        dataStore[activeKey].forEach(row => {
-            if(!row[selectedColIdx] || row[selectedColIdx].trim() === "") row[selectedColIdx] = today;
-        });
-        autoSave(); render(); closeModal(); notify(`Tanggal terisi`);
+    function createNewTable() { 
+        let n = prompt("NAMA TABEL BARU:"); 
+        if (n) { 
+            let k = 't' + Date.now(); 
+            config[k] = { title: n.toUpperCase(), category: config[activeKey].category, order: 99, cols: ["TANGGAL", "KETERANGAN"] }; 
+            dataStore[k] = [[new Date().toISOString().split('T')[0], ""]]; 
+            activeKey = k; autoSave(); render(); closeModal(); 
+        } 
     }
-
-    function handleSortData(dir) {
-        dataStore[activeKey].sort((a, b) => {
-            let vA = (a[selectedColIdx] || "").toString().trim();
-            let vB = (b[selectedColIdx] || "").toString().trim();
-            return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
-        });
-        autoSave(); render(); closeModal(); notify("Diurutkan");
-    }
-
-    function handleExecAction(type) {
-        if (type === 'add_row') {
-            let newRow = new Array(config[activeKey].cols.length).fill("");
-            if(config[activeKey].cols[0].includes("TANGGAL")) newRow[0] = getToday();
-            dataStore[activeKey].push(newRow);
+    function deleteCurrentTable() { if(Object.keys(config).length > 1 && confirm("Hapus tabel ini?")){ delete config[activeKey]; delete dataStore[activeKey]; activeKey = Object.keys(config)[0]; autoSave(); render(); closeModal(); } }
+    function deleteCategory() {
+        let cat = prompt("Nama Kategori yang akan dihapus:");
+        if(cat && confirm(`Hapus kategori ${cat.toUpperCase()}? Tabel di dalamnya akan dipindah ke UTAMA.`)) {
+            Object.keys(config).forEach(k => { if(config[k].category === cat.toUpperCase()) config[k].category = "UTAMA"; });
+            openCats = openCats.filter(c => c !== cat.toUpperCase()); autoSave(); render(); closeModal();
         }
-        if (type === 'add_col') { 
-            let n = prompt("NAMA KOLOM BARU:"); 
-            if(n) { config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r => r.push("")); } 
-        }
-        if (type === 'edit_header') { 
-            let n = prompt("GANTI NAMA KOLOM:", config[activeKey].cols[selectedColIdx]); 
-            if(n) config[activeKey].cols[selectedColIdx] = n.toUpperCase(); 
-        }
-        if (type === 'del_row' && selectedRowIdx !== null) { 
-            if(confirm("Hapus baris ini?")) dataStore[activeKey].splice(selectedRowIdx, 1); 
-        }
-        if (type === 'clear_all' && confirm("Hapus semua data?")) dataStore[activeKey] = [];
-        if (type === 'del_col' && selectedColIdx !== null) {
-            if(confirm(`Hapus kolom ini?`)) {
-                config[activeKey].cols.splice(selectedColIdx, 1);
-                dataStore[activeKey].forEach(row => row.splice(selectedColIdx, 1));
-            }
-        }
-        autoSave(); render(); closeModal();
     }
-
+    function changePage(p) { let t = Math.ceil(dataStore[activeKey].length/rowsPerPage) || 1; if(p >= 1 && p <= t) { currentPage = p; render(); } }
+    function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
+    function upd(r, c, v) { dataStore[activeKey][r][c] = v; autoSave(); }
+    function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
     function openPopUp(idx) { selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
     function openFilter(colIdx) { selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
     function openTableManager() { document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
     function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-    function closeAll() { closeModal(); if(document.getElementById('sidebar')) document.getElementById('sidebar').classList.remove('active'); }
-    function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
-
-    function deleteCurrentTable() { if (confirm(`HAPUS TABEL AKTIF?`)) { let keys = Object.keys(config); if (keys.length <= 1) return; delete config[activeKey]; delete dataStore[activeKey]; activeKey = Object.keys(config)[0]; autoSave(); render(); closeModal(); } }
-    function createNewTable() { let n = prompt("NAMA TABEL BARU:"); if (n) { let k = 't' + Date.now(); config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] }; dataStore[k] = [[getToday(), ""]]; activeKey = k; autoSave(); render(); closeModal(); } }
-    function upd(r, c, v) { dataStore[activeKey][r][c] = v; autoSave(); }
-    
-    function exportToExcel() { 
-        let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); 
-        let wb = XLSX.utils.book_new(); 
-        XLSX.utils.book_append_sheet(wb, ws, "Data"); 
-        XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); 
+    function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
+    function logout() { if(confirm("Keluar?")) { sessionStorage.removeItem('erp_is_logged'); location.reload(); } }
+    function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode')); }
+    if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
+    function handleSortData(dir) { dataStore[activeKey].sort((a, b) => { let vA = (a[selectedColIdx] || "").toString(), vB = (b[selectedColIdx] || "").toString(); return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA); }); autoSave(); render(); closeModal(); }
+    function handleExecAction(type) {
+        if (type === 'add_row') dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
+        if (type === 'add_col') { let n = prompt("KOLOM BARU:"); if(n){config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r=>r.push(""));}}
+        if (type === 'edit_header') { let n = prompt("GANTI NAMA:", config[activeKey].cols[selectedColIdx]); if(n) config[activeKey].cols[selectedColIdx]=n.toUpperCase(); }
+        if (type === 'del_row') dataStore[activeKey].splice(selectedRowIdx, 1);
+        if (type === 'del_col') { config[activeKey].cols.splice(selectedColIdx, 1); dataStore[activeKey].forEach(r=>r.splice(selectedColIdx,1)); }
+        if (type === 'clear_all' && confirm("Hapus semua isi tabel?")) dataStore[activeKey] = [];
+        autoSave(); render(); closeModal();
     }
-    function importFromExcel(e) {
-        let f = e.target.files[0]; if (!f) return;
-        let r = new FileReader();
-        r.onload = function(ex) {
-            let d = new Uint8Array(ex.target.result);
-            let wb = XLSX.read(d, {type: 'array'});
-            let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
-            if (rows.length > 0) {
-                config[activeKey].cols = rows[0].map(h => (h ? h.toString().toUpperCase() : "KOLOM"));
-                rows.shift(); dataStore[activeKey] = rows;
-                autoSave(); render(); notify("Berhasil Impor");
-            }
-        }; r.readAsArrayBuffer(f);
-    }
+    function fillColCurrentDate() { let d = new Date().toISOString().split('T')[0]; dataStore[activeKey].forEach(r => r[selectedColIdx] = d); autoSave(); render(); closeModal(); }
+    function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
+    function importFromExcel(e) { let f = e.target.files[0]; if(!f) return; let r = new FileReader(); r.onload = (ex) => { let d = new Uint8Array(ex.target.result), wb = XLSX.read(d, {type:'array'}); let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""}); if(rows.length > 0) { config[activeKey].cols = rows[0].map(h => h.toString().toUpperCase()); rows.shift(); dataStore[activeKey] = rows; autoSave(); render(); } }; r.readAsArrayBuffer(f); }
 
-    checkLoginStatus();
     render();
 </script>
 </body>

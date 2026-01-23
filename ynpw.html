@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ERP MONITORING - Clean Version</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --border: #e0e0e0;
+            --bg-main: #ffffff;
+            --bg-soft: #f9f9f9;
+            --primary: #1a73e8;
+            --text: #3c4043;
+            --danger: #d93025;
+            --overlay-bg: rgba(0,0,0,0.4);
+            --green: #10b981;
+        }
+
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        
+        /* PERBAIKAN: Hapus overflow:hidden agar layar bisa di-scroll ke bawah */
+        body { 
+            font-family:'Segoe UI',system-ui,-apple-system,sans-serif; 
+            background:var(--bg-main); 
+            color:var(--text); 
+            display:flex; 
+            flex-direction:column; 
+            min-height:100vh; 
+        }
+
+        /* --- SIDEBAR --- */
+        #sidebar { 
+            width: 280px; background: var(--bg-main); position: fixed; left: -280px; height: 100%; 
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1100; border-radius: 0 30px 30px 0; 
+            display: flex; flex-direction: column; box-shadow: 15px 0 50px rgba(0,0,0,0.1);
+        }
+        #sidebar.active { left: 0; }
+        .sidebar-header { padding: 30px 25px 20px; font-weight: 800; font-size: 18px; color: var(--text); border-bottom: 1px solid var(--border); }
+        .sidebar-content { flex-grow: 1; padding: 20px; }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
+        
+        .logout-btn { 
+            width: 100%; padding: 15px; border: none; border-radius: 12px; 
+            background: rgba(217, 48, 37, 0.1); color: var(--danger); 
+            font-weight: 800; cursor: pointer; transition: 0.2s; text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        #overlay{display:none;position:fixed;inset:0;background:var(--overlay-bg);z-index:1050;backdrop-filter:blur(2px)}
+        #overlay.active{display:block}
+
+        /* --- LAYOUT --- */
+        header{padding:0 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--bg-main);height:50px;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+        .container { padding: 15px; flex-grow: 1; }
+        
+        .card{background:#fff;border-radius:20px;padding:20px;margin-bottom:20px;border:1px solid var(--border);box-shadow:0 10px 25px rgba(0,0,0,0.03);}
+        textarea { width: 100%; height: 100px; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 12px; font-size: 13px; outline: none; background: #fcfcfc; margin-bottom: 12px; resize: none; }
+        
+        .btn-box { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+        .btn { border: none; border-radius: 10px; padding: 12px; font-weight: 700; font-size: 11px; text-transform: uppercase; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-go { background: #334155; } 
+        .btn-wa { background: #10b981; } 
+        .btn-cl { background: #e2e8f0; color: #475569; }
+
+        /* --- TABLE --- */
+        .table-res { background: var(--bg-main); border-radius: 15px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 10px 15px rgba(0,0,0,0.05); margin-bottom: 30px;}
+        .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; min-width: 1100px; }
+        
+        /* Fixed Header Tabel */
+        th { background: var(--bg-soft); padding: 12px 8px; font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; border: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        
+        /* Fixed Kolom Toko */
+        .stk { position: sticky; left: 0; background: white; z-index: 11; border-right: 2px solid var(--border); width: 100px; text-align: left !important; padding-left: 15px; font-weight: 800; font-size: 12px; }
+        
+        td { padding: 10px 5px; border: 1px solid var(--border); text-align: center; }
+        
+        .in-val { width: 85%; border: none; background: var(--bg-soft); border-radius: 6px; text-align: center; font-size: 13px; font-weight: 800; color: var(--text); outline: none; padding: 5px 0; }
+        .p-val { font-size: 10px; font-weight: 800; height: 14px; margin-top: 2px; }
+        .t-val { font-size: 9px; color: #cbd5e1; font-weight: 600; }
+
+        #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);background:#323232;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:10000;transition:0.3s;box-shadow: 0 4px 12px rgba(0,0,0,0.2);}
+        #toast.active{transform:translateX(-50%)translateY(0)}
+    </style>
+</head>
+<body>
+
+<div id="overlay" onclick="closeSidebar()"></div>
+<div id="toast">Notifikasi</div>
+
+<div id="sidebar">
+    <div class="sidebar-header">MENU ERP</div>
+    <div class="sidebar-content">
+        <p style="color: #94a3b8; font-size: 13px;">Monitoring Item Fokus</p>
+    </div>
+    <div class="sidebar-footer">
+        <button class="logout-btn" onclick="window.location.href='index.html'">
+            LOGOUT APLIKASI
+        </button>
+    </div>
+</div>
+
+<header>
+    <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="openSidebar()" style="background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:8px;font-weight:bold;cursor:pointer;">☰</button>
+        <div style="font-weight:800;font-size:14px;color:var(--primary);letter-spacing:0.5px;">MONITORING ERP</div>
+    </div>
+</header>
+
+<div class="container">
+    <div class="card">
+        <textarea id="txtIn" placeholder="Tempel laporan harian di sini..."></textarea>
+        <div class="btn-box">
+            <button class="btn btn-go" onclick="proData()">PROSES</button>
+            <button class="btn btn-wa" onclick="waCopy()">SALIN WA</button>
+            <button class="btn btn-cl" onclick="resTab()">RESET</button>
+        </div>
+    </div>
+
+    <div class="table-res">
+        <div class="scroll">
+            <table id="mainTable">
+                <thead>
+                    <tr id="headRow">
+                        <th class="stk">Toko</th>
+                    </tr>
+                </thead>
+                <tbody id="outBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Konfigurasi Data Berdasarkan Laporan Pagi Anda
+    const stores = [
+        { id: "ANBA", t: { s: 17127762, bg: 1, cl: 2, ch: 3, da: 2, gi: 3, sq: 10, cf: 30, tm: 50, p: 200, cb: 0 } },
+        { id: "YNPW", t: { s: 22271889, bg: 2, cl: 2, ch: 6, da: 3, gi: 7, sq: 12, cf: 25, tm: 50, p: 200, cb: 0 } },
+        { id: "GDGN", t: { s: 23019268, bg: 2, cl: 2, ch: 4, da: 4, gi: 7, sq: 8, cf: 0, tm: 50, p: 200, cb: 0 } },
+        { id: "GRGB", t: { s: 28792145, bg: 2, cl: 2, ch: 3, da: 3, gi: 7, sq: 13, cf: 12, tm: 50, p: 200, cb: 0 } },
+        { id: "PLMN", t: { s: 22908189, bg: 3, cl: 2, ch: 7, da: 3, gi: 5, sq: 9, cf: 19, tm: 50, p: 200, cb: 0 } },
+        { id: "FMI",  t: { s: 28338446, bg: 3, cl: 2, ch: 7, da: 4, gi: 7, sq: 12, cf: 18, tm: 50, p: 200, cb: 0 } },
+        { id: "WMI",  t: { s: 15475252, bg: 2, cl: 2, ch: 4, da: 2, gi: 4, sq: 6, cf: 9, tm: 50, p: 200, cb: 0 } },
+        { id: "PDA",  t: { s: 19618503, bg: 2, cl: 2, ch: 5, da: 2, gi: 4, sq: 6, cf: 32, tm: 50, p: 200, cb: 0 } },
+        { id: "KTL",  t: { s: 13977497, bg: 2, cl: 2, ch: 4, da: 2, gi: 3, sq: 8, cf: 10, tm: 50, p: 200, cb: 0 } },
+        { id: "CRLW", t: { s: 13091855, bg: 2, cl: 2, ch: 4, da: 5, gi: 3, sq: 7, cf: 0, tm: 50, p: 200, cb: 0 } }
+    ];
+
+    // Kolom diperbarui sesuai laporan pagi
+    const cols = [
+        { id: "s", k: "SALES", h: true, head: "SALES" },
+        { id: "bg", k: "BAYGON", h: true, head: "*🪳BAYGON 600🪳*" },
+        { id: "cl", k: "CAP LANG", h: true, head: "*CAP LANG*" },
+        { id: "ch", k: "CHEETOS", h: true, head: "*CHEETOS*" },
+        { id: "da", k: "DAIA", h: true, head: "*👚DAIA 1.4🪣*" },
+        { id: "gi", k: "GIV", h: true, head: "*🧼GIV 400🚿*" },
+        { id: "sq", k: "SILVERQUEEN", h: true, head: "*🍫SILVERQUEEN🍫*" },
+        { id: "cf", k: "CUT FRUIT", h: false, head: "🍍🍉 *CUT FRUIT* 🍉🍍" },
+        { id: "tm", k: "TTM", h: true, head: "🔥🔥 *TTM* 🔥🔥" },
+        { id: "p", k: "PULSA", h: true, head: "🏴‍☠️🏴‍☠️ *PULSA* 🏴‍☠️🏴‍☠️" },
+        { id: "cb", k: "CASHBACK", h: false, head: "✨✨ *CASHBACK* ✨✨" }
+    ];
+
+    function openSidebar() { document.getElementById('sidebar').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('active'); document.getElementById('overlay').classList.remove('active'); }
+    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.classList.add('active'); setTimeout(() => t.classList.remove('active'), 2500); }
+
+    function render() {
+        const head = document.getElementById('headRow');
+        const body = document.getElementById('outBody');
+        head.innerHTML = '<th class="stk">Toko</th>' + cols.map(c => `<th>${c.k}</th>`).join('');
+        body.innerHTML = stores.map((s, i) => `
+            <tr>
+                <td class="stk">${s.id}</td>
+                ${cols.map(c => `
+                    <td>
+                        <div style="display:flex; flex-direction:column; align-items:center;">
+                            <span class="t-val">${s.t[c.id] > 0 ? (c.id === 's' ? s.t[c.id].toLocaleString('id-ID') : s.t[c.id]) : ''}</span>
+                            <input type="text" id="v_${c.id}_${i}" class="in-val" placeholder="0" oninput="manualCalc(${i},'${c.id}',${s.t[c.id]},${c.h})">
+                            <span class="p-val" id="p_${c.id}_${i}"></span>
+                        </div>
+                    </td>
+                `).join('')}
+            </tr>
+        `).join('');
+    }
+
+    function manualCalc(i, cid, tg, h) {
+        let iv = document.getElementById(`v_${cid}_${i}`), pv = document.getElementById(`p_${cid}_${i}`);
+        let rv = iv.value.replace(/[^0-9]/g, '');
+        if(cid === 's' && rv !== "") iv.value = parseInt(rv).toLocaleString('id-ID');
+        else iv.value = rv;
+        if (!h || rv==="" || rv==="0" || tg===0) { pv.innerText = ""; return; }
+        let percent = Math.round((parseInt(rv)/tg)*100);
+        pv.innerText = percent + "%";
+        pv.style.color = percent >= 100 ? "var(--green)" : "var(--danger)";
+    }
+
+    function proData() {
+        const raw = document.getElementById('txtIn').value.toUpperCase();
+        if (!raw) { showToast("Input kosong!"); return; }
+        let currentMode = "s";
+        raw.split('\n').forEach(line => {
+            cols.forEach(c => { if(line.includes(c.k)) currentMode = c.id; });
+            stores.forEach((s, i) => {
+                if (line.includes(s.id)) {
+                    let val = line.split('/').pop().replace(/[^0-9]/g, '').trim();
+                    if (val) {
+                        const input = document.getElementById(`v_${currentMode}_${i}`);
+                        input.value = currentMode === 's' ? parseInt(val).toLocaleString('id-ID') : val;
+                        manualCalc(i, currentMode, s.t[currentMode], cols.find(x=>x.id===currentMode).h);
+                    }
+                }
+            });
+        });
+        showToast("Data diproses!");
+    }
+
+    function waCopy() {
+        const now = new Date();
+        const tgl = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+        let msg = `*LAPORAN ITEM FOKUS AREA PAK FADHOLI*\nTanggal: ${tgl}\n\n`;
+        cols.forEach(c => {
+            msg += `${c.head}\n`;
+            stores.forEach((s, i) => {
+                let act = document.getElementById(`v_${c.id}_${i}`).value || "0";
+                let acv = document.getElementById(`p_${c.id}_${i}`).innerText || "0%";
+                msg += `${s.id}: ${act} (${acv})\n`;
+            });
+            msg += `\n`;
+        });
+        const el = document.createElement('textarea');
+        el.value = msg; document.body.appendChild(el); el.select();
+        document.execCommand('copy'); document.body.removeChild(el);
+        showToast("Tersalin ke Clipboard!");
+    }
+
+    function resTab() { if(confirm("Hapus semua data?")) { document.getElementById('txtIn').value = ""; render(); } }
+
+    window.onload = render;
+</script>
+</body>
+</html>
