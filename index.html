@@ -51,13 +51,15 @@
         .btn-ui:hover{background:var(--bg-soft)}
         
         .toolbar{display:flex;align-items:center;gap:8px;background:var(--bg-soft);padding:8px 15px;border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap;flex-shrink:0}
-        .table-container{flex-grow:1;overflow:auto;background:var(--bg-main)}
-        table{border-collapse:collapse;width:100%;min-width:600px;table-layout:fixed}
-        th{background:var(--bg-soft);padding:0;border:1px solid var(--border);font-size:12px;position:sticky;top:0;z-index:10;color:var(--text)}
+        
+        .table-container{flex-grow:1;overflow:auto;background:var(--bg-main); position: relative;}
+        table{border-collapse:collapse;width:100%;table-layout: fixed;}
+        th{background:var(--bg-soft);padding:0;border:1px solid var(--border);font-size:11px;position:sticky;top:0;z-index:10;color:var(--text); width: 130px;}
         .th-inner{display:flex;align-items:center;justify-content:space-between;padding:10px;cursor:pointer}
-        td{border:1px solid var(--border);padding:0;height:38px}
-        td input{border:none;padding:0 10px;font-size:14px;outline:none;background:transparent;width:100%;height:100%;color:var(--text)}
-        .row-num{width:50px;background:var(--bg-soft);text-align:center;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;border-right:1px solid var(--border)}
+        td{border:1px solid var(--border);padding:0;height:38px; width: 130px;}
+        td input{border:none;padding:0 10px;font-size:13px;outline:none;background:transparent;width:100%;height:100%;color:var(--text); text-overflow: ellipsis;}
+        
+        .row-num{width:50px !important; background:var(--bg-soft); text-align:center; font-size:11px; font-weight:700; color:var(--primary); cursor:pointer; border-right:1px solid var(--border); position: sticky; left: 0; z-index: 5;}
 
         .sheet{position:fixed;bottom:-100%;left:0;right:0;background:var(--bg-main);z-index:5000;border-radius:24px 24px 0 0;padding:25px 20px;transition:0.4s cubic-bezier(0.4,0,0.2,1);max-width:600px;margin:0 auto;box-shadow:0 -5px 25px rgba(0,0,0,0.2); border: 1px solid var(--border);}
         .sheet.active{bottom:0}
@@ -69,7 +71,8 @@
         #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);background:#323232;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:10000;transition:0.3s}
         #toast.active{transform:translateX(-50%)translateY(0)}
         
-        .nav-box{display:flex;align-items:center;justify-content:space-around;gap:5px;padding:12px;background:var(--bg-soft);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:100}
+        .nav-box{display:flex; flex-direction: column; gap:8px; padding:12px;background:var(--bg-soft);border-top:1px solid var(--border);position:sticky;bottom:0;z-index:100}
+        .nav-row{display: flex; justify-content: space-around; align-items: center; width: 100%;}
     </style>
 </head>
 <body>
@@ -136,9 +139,16 @@
 </div>
 
 <div class="nav-box">
-    <button class="btn-ui" onclick="changePage(currentPage-1)">&laquo; PREV</button>
-    <div id="page-info" style="font-size:13px; font-weight:700; color:var(--text); min-width:60px; text-align:center;">HAL 1</div>
-    <button class="btn-ui" onclick="changePage(currentPage+1)">NEXT &raquo;</button>
+    <div class="nav-row">
+        <button class="btn-ui" onclick="changePage(currentPage-1)">BARIS &laquo;</button>
+        <div id="page-info" style="font-size:12px; font-weight:700; color:var(--text);">BARIS 1</div>
+        <button class="btn-ui" onclick="changePage(currentPage+1)">&raquo; BARIS</button>
+    </div>
+    <div class="nav-row" id="col-nav-container" style="border-top: 1px dashed var(--border); padding-top: 8px;">
+        <button class="btn-ui" onclick="changeColPage(currentColPage-1)">KOLOM &laquo;</button>
+        <div id="col-page-info" style="font-size:12px; font-weight:700; color:var(--primary);">KOLOM 1-10</div>
+        <button class="btn-ui" onclick="changeColPage(currentColPage+1)">&raquo; KOLOM</button>
+    </div>
 </div>
 
 <div id="sheet-menu" class="sheet">
@@ -175,7 +185,9 @@
 <script>
     let activeKey = 'default';
     let currentPage = 1;
-    let rowsPerPage = 50;
+    let currentColPage = 1;
+    let rowsPerPage = 10; // Maksimal 10 Baris per Halaman
+    let colsPerPage = 10; // Maksimal 10 kolom
     let selectedRowIdx = null;
     let selectedColIdx = null;
     let searchQuery = "";
@@ -191,17 +203,12 @@
     function login() {
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
-        const m = document.getElementById('m');
         if (u === 'P' && p === 'p') {
             document.getElementById('login-screen').style.display = 'none';
-            notify("Akses Admin");
         } else if (u === 'owner' && p === 'owner') {
             document.getElementById('btn-save-main').style.display = "none";
             document.getElementById('btn-table-mgmt').style.display = "none";
             document.getElementById('login-screen').style.display = 'none';
-            notify("Akses Owner");
-        } else {
-            m.style.color = 'red'; m.innerText = 'Gagal!';
         }
     }
 
@@ -226,10 +233,14 @@
 
         document.getElementById('disp-title').innerText = config[activeKey].title;
 
-        let cols = config[activeKey].cols;
-        let hHtml = `<th style="width:50px">ID</th>`;
-        cols.forEach((c, i) => { 
-            hHtml += `<th><div class="th-inner" onclick="openFilter(${i})"><span>${c}</span> <span>▼</span></div></th>`; 
+        let allCols = config[activeKey].cols;
+        let startCol = (currentColPage - 1) * colsPerPage;
+        let endCol = startCol + colsPerPage;
+        let visibleCols = allCols.slice(startCol, endCol);
+
+        let hHtml = `<th class="row-num">ID</th>`;
+        visibleCols.forEach((c, i) => { 
+            hHtml += `<th><div class="th-inner" onclick="openFilter(${startCol + i})"><span>${c}</span> <span>▼</span></div></th>`; 
         });
         document.getElementById('table-head').innerHTML = hHtml;
 
@@ -244,142 +255,88 @@
         let bHtml = paginated.map((item) => `
             <tr>
                 <td class="row-num" onclick="openPopUp(${item.index})">${item.index + 1}</td>
-                ${item.row.map((cell, ci) => `<td><input type="text" value="${cell}" oninput="upd(${item.index},${ci},this.value)"></td>`).join('')}
+                ${item.row.slice(startCol, endCol).map((cell, ci) => `<td><input type="text" value="${cell}" oninput="upd(${item.index},${startCol + ci},this.value)"></td>`).join('')}
             </tr>
         `).join('');
         document.getElementById('table-body').innerHTML = bHtml;
-        document.getElementById('page-info').innerText = `HAL ${currentPage} / ${totalPages}`;
+
+        document.getElementById('page-info').innerText = `HAL BARIS: ${currentPage} / ${totalPages}`;
+        document.getElementById('col-page-info').innerText = `KOLOM ${startCol + 1} - ${Math.min(endCol, allCols.length)}`;
+        
+        document.getElementById('col-nav-container').style.display = allCols.length > colsPerPage ? 'flex' : 'none';
     }
 
-    function openPopUp(idx) { 
-        selectedRowIdx = idx; 
-        document.getElementById('sheet-menu').classList.add('active'); 
-        document.getElementById('overlay').classList.add('active'); 
+    function changeColPage(p) {
+        let maxColPages = Math.ceil(config[activeKey].cols.length / colsPerPage);
+        if(p >= 1 && p <= maxColPages) { currentColPage = p; render(); }
     }
 
-    function openFilter(colIdx) { 
-        selectedColIdx = colIdx; 
-        document.getElementById('sheet-filter').classList.add('active'); 
-        document.getElementById('overlay').classList.add('active'); 
+    function changePage(p) { 
+        let filtered = dataStore[activeKey];
+        if(searchQuery) filtered = filtered.filter(row => row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
+        if(dateFilter.start && dateFilter.end) filtered = filtered.filter(row => row[0] >= dateFilter.start && row[0] <= dateFilter.end);
+        
+        let total = Math.ceil(filtered.length / rowsPerPage) || 1;
+        if(p >= 1 && p <= total) { currentPage = p; render(); } 
     }
 
-    function openTableManager() {
-        document.getElementById('sheet-table-manager').classList.add('active');
-        document.getElementById('overlay').classList.add('active');
-        document.getElementById('sidebar').classList.remove('active');
-    }
-
-    function closeModal() { 
-        document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); 
-        document.getElementById('overlay').classList.remove('active'); 
-    }
-
-    function toggleSidebar() { 
-        document.getElementById('sidebar').classList.toggle('active'); 
-        document.getElementById('overlay').classList.toggle('active'); 
-    }
-
-    function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
+    function switchTab(k) { activeKey = k; currentPage = 1; currentColPage = 1; render(); closeAll(); }
 
     function handleExecAction(type) {
-        if (type === 'add_row') dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
-        
+        if (type === 'add_row') {
+            dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
+            // Pindah ke halaman terakhir jika baris baru melampaui limit
+            let totalRows = dataStore[activeKey].length;
+            currentPage = Math.ceil(totalRows / rowsPerPage);
+        }
         if (type === 'add_col') { 
             let n = prompt("NAMA KOLOM BARU:"); 
-            if(n) { config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r => r.push("")); } 
+            if(n) { 
+                config[activeKey].cols.push(n.toUpperCase()); 
+                dataStore[activeKey].forEach(r => r.push("")); 
+                currentColPage = Math.ceil(config[activeKey].cols.length / colsPerPage);
+            } 
         }
-
         if (type === 'edit_header') { 
             let n = prompt("GANTI NAMA KOLOM:", config[activeKey].cols[selectedColIdx]); 
             if(n) config[activeKey].cols[selectedColIdx] = n.toUpperCase(); 
         }
-
         if (type === 'del_row' && selectedRowIdx !== null) { 
             if(confirm("Hapus baris ini?")) dataStore[activeKey].splice(selectedRowIdx, 1); 
         }
-
-        if (type === 'clear_all') {
-            if(confirm("PERINGATAN: Hapus seluruh isi data di tabel ini?")) {
-                dataStore[activeKey] = [];
-                notify("Data dikosongkan");
-            }
+        if (type === 'clear_all' && confirm("Hapus semua data di tabel ini?")) {
+            dataStore[activeKey] = [];
+            notify("Data dikosongkan");
         }
-
-        // LOGIKA BARU: HAPUS KOLOM
         if (type === 'del_col' && selectedColIdx !== null) {
             if(config[activeKey].cols.length <= 1) {
                 alert("Minimal harus ada 1 kolom!");
             } else if(confirm(`Hapus kolom "${config[activeKey].cols[selectedColIdx]}"?`)) {
                 config[activeKey].cols.splice(selectedColIdx, 1);
                 dataStore[activeKey].forEach(row => row.splice(selectedColIdx, 1));
+                if(currentColPage > Math.ceil(config[activeKey].cols.length / colsPerPage)) currentColPage--;
                 notify("Kolom dihapus");
             }
         }
-
         render(); closeModal();
     }
 
-    function deleteCurrentTable() {
-        let title = config[activeKey].title;
-        if (confirm(`HAPUS TABEL "${title}"? Data tidak bisa kembali.`)) {
-            let keys = Object.keys(config);
-            if (keys.length <= 1) {
-                alert("Minimal harus ada 1 tabel!");
-                return;
-            }
-            delete config[activeKey];
-            delete dataStore[activeKey];
-            saveData();
-            activeKey = Object.keys(config)[0];
-            render();
-            closeModal();
-            notify("Tabel Terhapus");
-        }
-    }
-
-    function handleSortData(dir) {
-        dataStore[activeKey].sort((a, b) => {
-            let vA = a[selectedColIdx] || "", vB = b[selectedColIdx] || "";
-            return dir === 'asc' ? vA.toString().localeCompare(vB.toString()) : vB.toString().localeCompare(vA.toString());
-        });
-        render(); closeModal();
-    }
-
-    function createNewTable() {
-        let n = prompt("NAMA TABEL BARU:");
-        if (n) {
-            let k = 't' + Date.now();
-            config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] };
-            dataStore[k] = [["", ""]];
-            activeKey = k; render(); closeModal(); notify("Berhasil");
-        }
-    }
-
-    function upd(r, c, v) { dataStore[activeKey][r][c] = v; }
-    function changePage(p) { if(p >= 1) { currentPage = p; render(); } }
-    function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
+    function openPopUp(idx) { selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+    function openFilter(colIdx) { selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+    function openTableManager() { document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); document.getElementById('sidebar').classList.remove('active'); }
+    function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
+    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+    function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
     function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
-    function findData() { dateFilter.start = document.getElementById('dateStart').value; dateFilter.end = document.getElementById('dateEnd').value; render(); }
+    function findData() { dateFilter.start = document.getElementById('dateStart').value; dateFilter.end = document.getElementById('dateEnd').value; currentPage = 1; render(); }
     function saveData() { localStorage.setItem('erp_clean_conf', JSON.stringify(config)); localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); notify("Tersimpan"); }
-    
-    function exportToExcel() {
-        let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]);
-        let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data");
-        XLSX.writeFile(wb, config[activeKey].title + ".xlsx");
-    }
+    function deleteCurrentTable() { let title = config[activeKey].title; if (confirm(`HAPUS TABEL "${title}"?`)) { let keys = Object.keys(config); if (keys.length <= 1) return; delete config[activeKey]; delete dataStore[activeKey]; activeKey = Object.keys(config)[0]; render(); closeModal(); } }
+    function handleSortData(dir) { dataStore[activeKey].sort((a, b) => { let vA = a[selectedColIdx] || "", vB = b[selectedColIdx] || ""; return dir === 'asc' ? vA.toString().localeCompare(vB.toString()) : vB.toString().localeCompare(vA.toString()); }); render(); closeModal(); }
+    function createNewTable() { let n = prompt("NAMA TABEL BARU:"); if (n) { let k = 't' + Date.now(); config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] }; dataStore[k] = [["", ""]]; activeKey = k; render(); closeModal(); } }
+    function upd(r, c, v) { dataStore[activeKey][r][c] = v; }
+    function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
+    function importFromExcel(e) { let f = e.target.files[0]; let r = new FileReader(); r.onload = function(ex) { let d = new Uint8Array(ex.target.result); let wb = XLSX.read(d, {type:'array'}); let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1}); if(rows.length > 0) { config[activeKey].cols = rows[0]; rows.shift(); dataStore[activeKey] = rows; render(); } }; r.readAsArrayBuffer(f); }
 
-    function importFromExcel(e) {
-        let f = e.target.files[0]; let r = new FileReader();
-        r.onload = function(ex) {
-            let d = new Uint8Array(ex.target.result); let wb = XLSX.read(d, {type:'array'});
-            let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-            if(rows.length > 0) { 
-                config[activeKey].cols = rows[0]; rows.shift(); 
-                dataStore[activeKey] = rows; render(); notify("Import Sukses"); 
-            }
-        }; r.readAsArrayBuffer(f);
-    }
-    
     render();
 </script>
 </body>
