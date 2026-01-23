@@ -335,7 +335,53 @@
     function createNewTable() { let n = prompt("NAMA TABEL BARU:"); if (n) { let k = 't' + Date.now(); config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] }; dataStore[k] = [["", ""]]; activeKey = k; render(); closeModal(); } }
     function upd(r, c, v) { dataStore[activeKey][r][c] = v; }
     function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
-    function importFromExcel(e) { let f = e.target.files[0]; let r = new FileReader(); r.onload = function(ex) { let d = new Uint8Array(ex.target.result); let wb = XLSX.read(d, {type:'array'}); let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1}); if(rows.length > 0) { config[activeKey].cols = rows[0]; rows.shift(); dataStore[activeKey] = rows; render(); } }; r.readAsArrayBuffer(f); }
+    function importFromExcel(e) {
+    let f = e.target.files[0];
+    if (!f) return;
+    
+    let r = new FileReader();
+    r.onload = function(ex) {
+        try {
+            let d = new Uint8Array(ex.target.result);
+            let wb = XLSX.read(d, {type: 'array'});
+            let sheetName = wb.SheetNames[0];
+            let rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header: 1, defval: ""});
+
+            if (rows.length > 0) {
+                // Ambil header (baris pertama)
+                let newCols = rows[0].map(h => (h ? h.toString().toUpperCase() : "KOLOM_TANPA_NAMA"));
+                
+                // Ambil data (baris kedua dst) dan bersihkan
+                rows.shift();
+                let cleanedData = rows.map(row => {
+                    // Pastikan panjang baris sama dengan jumlah kolom
+                    let newRow = new Array(newCols.length).fill("");
+                    for (let i = 0; i < newCols.length; i++) {
+                        newRow[i] = row[i] !== undefined && row[i] !== null ? row[i].toString() : "";
+                    }
+                    return newRow;
+                });
+
+                // Update konfigurasi dan data store
+                config[activeKey].cols = newCols;
+                dataStore[activeKey] = cleanedData;
+                
+                currentPage = 1;
+                render();
+                notify("Impor Berhasil: " + cleanedData.length + " baris");
+            } else {
+                alert("File Excel kosong!");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Gagal membaca file. Pastikan format .xlsx benar.");
+        }
+    };
+    r.readAsArrayBuffer(f);
+    // Reset input file agar bisa upload file yang sama berkali-kali
+    e.target.value = '';
+}
+
 
     render();
 </script>
