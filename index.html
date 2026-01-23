@@ -85,7 +85,6 @@
         <input type="text" id="u" placeholder="Username" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid var(--border); border-radius:8px; background:var(--bg-soft); color:var(--text);">
         <input type="password" id="p" placeholder="Password" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid var(--border); border-radius:8px; background:var(--bg-soft); color:var(--text);">
         <button onclick="login()" style="background:var(--primary); color:#fff; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%;">MASUK</button>
-        <p id="m" style="font-size:12px; margin-top:15px; font-weight:600;"></p>
     </div>
 </div>
 
@@ -122,9 +121,8 @@
         <input type="date" id="dateStart" style="flex:1; border:1px solid var(--border); padding:8px; border-radius:6px; font-size:12px; background:var(--bg-main); color:var(--text);">
         <span style="color:var(--text)">-</span>
         <input type="date" id="dateEnd" style="flex:1; border:1px solid var(--border); padding:8px; border-radius:6px; font-size:12px; background:var(--bg-main); color:var(--text);">
-        <button onclick="findData()" style="background:var(--primary); color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">FIND</button>
-        <button onclick="resetFind()" style="background:var(--bg-main); border:1px solid var(--border); padding:8px; border-radius:6px; cursor:pointer; font-size:10px; color:var(--text);">X</button>
-    </div>
+        <button onclick="findData()" style="background:var(--primary); color:#fff; border:none; padding:8px 20px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">FIND</button>
+        </div>
     <div style="display:flex; gap:8px; width:100%; align-items:center; margin-top:4px;">
         <button onclick="exportToExcel()" class="btn-ui" style="font-size:11px;">EXPORT</button>
         <button onclick="document.getElementById('importFile').click()" class="btn-ui" style="font-size:11px;">IMPORT</button>
@@ -168,8 +166,8 @@
     <div class="sheet-handle" onclick="closeModal()"></div>
     <div style="text-align:center; font-weight:700; margin-bottom:20px; font-size:14px; color:var(--text);">SORTING & KOLOM</div>
     <div style="display: flex; flex-direction: column; gap: 8px;">
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('asc')">URUTKAN A - Z</button>
-        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('desc')">URUTKAN Z - A</button>
+        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('asc')">URUTKAN A - Z / LAMA - BARU</button>
+        <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold;" onclick="handleSortData('desc')">URUTKAN Z - A / BARU - LAMA</button>
         <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--primary); border-color: var(--primary);" onclick="handleExecAction('edit_header')">GANTI NAMA KOLOM</button>
         <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--success); border-color: var(--success);" onclick="fillColCurrentDate()">ISI TANGGAL HARI INI</button>
         <button class="btn-ui" style="padding:16px; text-align:left; font-weight:bold; color: var(--danger); border-color: var(--danger);" onclick="handleExecAction('del_col')">HAPUS KOLOM INI</button>
@@ -206,17 +204,10 @@
     function login() {
         const u = document.getElementById('u').value;
         const p = document.getElementById('p').value;
-        if (u === 'P' && p === 'p') {
-            document.getElementById('login-screen').style.display = 'none';
-        } else if (u === 'owner' && p === 'owner') {
-            document.getElementById('btn-save-main').style.display = "none";
-            document.getElementById('btn-table-mgmt').style.display = "none";
-            document.getElementById('login-screen').style.display = 'none';
-        }
+        if (u === 'P' && p === 'p') { document.getElementById('login-screen').style.display = 'none'; }
     }
 
     function logout() { if(confirm("Keluar?")) location.reload(); }
-    
     function toggleDarkMode() {
         document.body.classList.toggle('dark-mode');
         localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode'));
@@ -249,19 +240,15 @@
         });
         document.getElementById('table-head').innerHTML = hHtml;
 
-        // Filter Logic Utama
         let filtered = dataStore[activeKey].map((row, index) => ({row, index}));
         
-        // Filter Search Box
         if(searchQuery) {
             filtered = filtered.filter(i => i.row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
         }
         
-        // Filter FIND Tanggal
         if(dateFilter.start && dateFilter.end) {
             filtered = filtered.filter(i => {
                 let rowDate = i.row[0] ? i.row[0].toString().trim() : "";
-                // Memastikan format YYYY-MM-DD untuk perbandingan string
                 return rowDate >= dateFilter.start && rowDate <= dateFilter.end;
             });
         }
@@ -278,7 +265,7 @@
         `).join('');
         document.getElementById('table-body').innerHTML = bHtml;
 
-        document.getElementById('page-info').innerText = `HAL BARIS: ${currentPage} / ${totalPages}`;
+        document.getElementById('page-info').innerText = `BARIS: ${currentPage} / ${totalPages}`;
         document.getElementById('col-page-info').innerText = `KOLOM ${startCol + 1} - ${Math.min(endCol, allCols.length)}`;
         document.getElementById('col-nav-container').style.display = allCols.length > colsPerPage ? 'flex' : 'none';
     }
@@ -289,7 +276,6 @@
     }
 
     function changePage(p) { 
-        // Re-calculate total pages based on current filters
         let filtered = dataStore[activeKey];
         if(searchQuery) filtered = filtered.filter(row => row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
         if(dateFilter.start && dateFilter.end) filtered = filtered.filter(row => row[0] >= dateFilter.start && row[0] <= dateFilter.end);
@@ -303,14 +289,24 @@
     function fillColCurrentDate() {
         if(selectedColIdx === null) return;
         const today = getToday();
-        let count = 0;
         dataStore[activeKey].forEach(row => {
-            if(!row[selectedColIdx] || row[selectedColIdx].trim() === "") {
-                row[selectedColIdx] = today;
-                count++;
-            }
+            if(!row[selectedColIdx] || row[selectedColIdx].trim() === "") row[selectedColIdx] = today;
         });
-        render(); closeModal(); notify(`Terisi ${count} tanggal`);
+        render(); closeModal(); notify(`Tanggal terisi otomatis`);
+    }
+
+    function handleSortData(dir) {
+        dataStore[activeKey].sort((a, b) => {
+            let vA = (a[selectedColIdx] || "").toString().trim();
+            let vB = (b[selectedColIdx] || "").toString().trim();
+            let isDate = /^\d{4}-\d{2}-\d{2}$/.test(vA) && /^\d{4}-\d{2}-\d{2}$/.test(vB);
+            if (isDate) {
+                let dA = new Date(vA), dB = new Date(vB);
+                return dir === 'asc' ? dA - dB : dB - dA;
+            }
+            return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA);
+        });
+        render(); closeModal(); notify("Data diurutkan");
     }
 
     function handleExecAction(type) {
@@ -318,15 +314,10 @@
             let newRow = new Array(config[activeKey].cols.length).fill("");
             if(config[activeKey].cols[0].includes("TANGGAL")) newRow[0] = getToday();
             dataStore[activeKey].push(newRow);
-            currentPage = Math.ceil(dataStore[activeKey].length / rowsPerPage);
         }
         if (type === 'add_col') { 
             let n = prompt("NAMA KOLOM BARU:"); 
-            if(n) { 
-                config[activeKey].cols.push(n.toUpperCase()); 
-                dataStore[activeKey].forEach(r => r.push("")); 
-                currentColPage = Math.ceil(config[activeKey].cols.length / colsPerPage);
-            } 
+            if(n) { config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r => r.push("")); } 
         }
         if (type === 'edit_header') { 
             let n = prompt("GANTI NAMA KOLOM:", config[activeKey].cols[selectedColIdx]); 
@@ -335,9 +326,7 @@
         if (type === 'del_row' && selectedRowIdx !== null) { 
             if(confirm("Hapus baris ini?")) dataStore[activeKey].splice(selectedRowIdx, 1); 
         }
-        if (type === 'clear_all' && confirm("Hapus semua data?")) {
-            dataStore[activeKey] = [];
-        }
+        if (type === 'clear_all' && confirm("Hapus semua data?")) dataStore[activeKey] = [];
         if (type === 'del_col' && selectedColIdx !== null) {
             if(confirm(`Hapus kolom "${config[activeKey].cols[selectedColIdx]}"?`)) {
                 config[activeKey].cols.splice(selectedColIdx, 1);
@@ -349,13 +338,12 @@
 
     function openPopUp(idx) { selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
     function openFilter(colIdx) { selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-    function openTableManager() { document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); document.getElementById('sidebar').classList.remove('active'); }
+    function openTableManager() { document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
     function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
     function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
     
     function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
-    
     function findData() { 
         dateFilter.start = document.getElementById('dateStart').value; 
         dateFilter.end = document.getElementById('dateEnd').value; 
@@ -363,6 +351,7 @@
         render(); 
     }
     
+    // Fungsi reset tetap ada di memori jika dibutuhkan, namun tombolnya sudah dihapus dari UI
     function resetFind() {
         document.getElementById('dateStart').value = "";
         document.getElementById('dateEnd').value = "";
@@ -371,8 +360,7 @@
     }
 
     function saveData() { localStorage.setItem('erp_clean_conf', JSON.stringify(config)); localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); notify("Tersimpan"); }
-    function deleteCurrentTable() { let title = config[activeKey].title; if (confirm(`HAPUS TABEL "${title}"?`)) { let keys = Object.keys(config); if (keys.length <= 1) return; delete config[activeKey]; delete dataStore[activeKey]; activeKey = Object.keys(config)[0]; render(); closeModal(); } }
-    function handleSortData(dir) { dataStore[activeKey].sort((a, b) => { let vA = a[selectedColIdx] || "", vB = b[selectedColIdx] || ""; return dir === 'asc' ? vA.toString().localeCompare(vB.toString()) : vB.toString().localeCompare(vA.toString()); }); render(); closeModal(); }
+    function deleteCurrentTable() { if (confirm(`HAPUS TABEL AKTIF?`)) { let keys = Object.keys(config); if (keys.length <= 1) return; delete config[activeKey]; delete dataStore[activeKey]; activeKey = Object.keys(config)[0]; render(); closeModal(); } }
     function createNewTable() { let n = prompt("NAMA TABEL BARU:"); if (n) { let k = 't' + Date.now(); config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] }; dataStore[k] = [[getToday(), ""]]; activeKey = k; render(); closeModal(); } }
     function upd(r, c, v) { dataStore[activeKey][r][c] = v; }
     
@@ -384,34 +372,19 @@
     }
     
     function importFromExcel(e) {
-        let f = e.target.files[0];
-        if (!f) return;
+        let f = e.target.files[0]; if (!f) return;
         let r = new FileReader();
         r.onload = function(ex) {
-            try {
-                let d = new Uint8Array(ex.target.result);
-                let wb = XLSX.read(d, {type: 'array'});
-                let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
-                if (rows.length > 0) {
-                    let newCols = rows[0].map(h => (h ? h.toString().toUpperCase() : "KOLOM"));
-                    rows.shift();
-                    let cleanedData = rows.map(row => {
-                        let newRow = new Array(newCols.length).fill("");
-                        for (let i = 0; i < newCols.length; i++) {
-                            newRow[i] = row[i] !== undefined && row[i] !== null ? row[i].toString() : "";
-                        }
-                        return newRow;
-                    });
-                    config[activeKey].cols = newCols;
-                    dataStore[activeKey] = cleanedData;
-                    currentPage = 1; 
-                    render(); 
-                    notify("Impor Berhasil");
-                }
-            } catch (err) { alert("Gagal membaca file."); }
-        };
-        r.readAsArrayBuffer(f);
-        e.target.value = '';
+            let d = new Uint8Array(ex.target.result);
+            let wb = XLSX.read(d, {type: 'array'});
+            let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ""});
+            if (rows.length > 0) {
+                config[activeKey].cols = rows[0].map(h => (h ? h.toString().toUpperCase() : "KOLOM"));
+                rows.shift();
+                dataStore[activeKey] = rows;
+                render(); notify("Impor Berhasil");
+            }
+        }; r.readAsArrayBuffer(f);
     }
 
     render();
