@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP BETA - Integrated</title>
+    <title>ERP BETA - Integrated Full</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { 
@@ -25,7 +25,7 @@
         }
 
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-main);color:var(--text);overflow:hidden;display:flex;flex-direction:column;height:100vh;transition:background .3s}
+        body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;background:var(--bg-main);color:var(--text);overflow:auto;display:flex;flex-direction:column;min-height:100vh;transition:background .3s}
         
         #login-screen {
             position: fixed; inset: 0; background: var(--bg-main); z-index: 9999;
@@ -123,6 +123,7 @@
         <span style="color:var(--text)">-</span>
         <input type="date" id="dateEnd" style="flex:1; border:1px solid var(--border); padding:8px; border-radius:6px; font-size:12px; background:var(--bg-main); color:var(--text);">
         <button onclick="findData()" style="background:var(--primary); color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer; font-weight:bold; font-size:12px;">FIND</button>
+        <button onclick="resetFind()" style="background:var(--bg-main); border:1px solid var(--border); padding:8px; border-radius:6px; cursor:pointer; font-size:10px; color:var(--text);">X</button>
     </div>
     <div style="display:flex; gap:8px; width:100%; align-items:center; margin-top:4px;">
         <button onclick="exportToExcel()" class="btn-ui" style="font-size:11px;">EXPORT</button>
@@ -248,16 +249,19 @@
         });
         document.getElementById('table-head').innerHTML = hHtml;
 
-        // Filter Logic
+        // Filter Logic Utama
         let filtered = dataStore[activeKey].map((row, index) => ({row, index}));
         
+        // Filter Search Box
         if(searchQuery) {
             filtered = filtered.filter(i => i.row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
         }
         
+        // Filter FIND Tanggal
         if(dateFilter.start && dateFilter.end) {
             filtered = filtered.filter(i => {
                 let rowDate = i.row[0] ? i.row[0].toString().trim() : "";
+                // Memastikan format YYYY-MM-DD untuk perbandingan string
                 return rowDate >= dateFilter.start && rowDate <= dateFilter.end;
             });
         }
@@ -285,6 +289,7 @@
     }
 
     function changePage(p) { 
+        // Re-calculate total pages based on current filters
         let filtered = dataStore[activeKey];
         if(searchQuery) filtered = filtered.filter(row => row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
         if(dateFilter.start && dateFilter.end) filtered = filtered.filter(row => row[0] >= dateFilter.start && row[0] <= dateFilter.end);
@@ -350,11 +355,14 @@
     function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
     
     function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
+    
     function findData() { 
         dateFilter.start = document.getElementById('dateStart').value; 
         dateFilter.end = document.getElementById('dateEnd').value; 
-        currentPage = 1; render(); 
+        currentPage = 1; 
+        render(); 
     }
+    
     function resetFind() {
         document.getElementById('dateStart').value = "";
         document.getElementById('dateEnd').value = "";
@@ -368,7 +376,12 @@
     function createNewTable() { let n = prompt("NAMA TABEL BARU:"); if (n) { let k = 't' + Date.now(); config[k] = { title: n.toUpperCase(), cols: ["TANGGAL", "KETERANGAN"] }; dataStore[k] = [[getToday(), ""]]; activeKey = k; render(); closeModal(); } }
     function upd(r, c, v) { dataStore[activeKey][r][c] = v; }
     
-    function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
+    function exportToExcel() { 
+        let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); 
+        let wb = XLSX.utils.book_new(); 
+        XLSX.utils.book_append_sheet(wb, ws, "Data"); 
+        XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); 
+    }
     
     function importFromExcel(e) {
         let f = e.target.files[0];
@@ -391,7 +404,9 @@
                     });
                     config[activeKey].cols = newCols;
                     dataStore[activeKey] = cleanedData;
-                    currentPage = 1; render(); notify("Impor Berhasil");
+                    currentPage = 1; 
+                    render(); 
+                    notify("Impor Berhasil");
                 }
             } catch (err) { alert("Gagal membaca file."); }
         };
