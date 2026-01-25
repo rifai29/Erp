@@ -29,6 +29,13 @@ const fp = flatpickr("#dateRangePicker", {
     }
 });
 
+// --- FUNGSI UPDATE ROWS PER PAGE (POIN 8) ---
+function updateRowsPerPage(val) {
+    rowsPerPage = parseInt(val);
+    currentPage = 1; // Reset ke halaman 1
+    render();
+}
+
 // --- MODIFIKASI: LOGIN DUA AKUN ---
 function login() {
     const u = document.getElementById('u').value, p = document.getElementById('p').value;

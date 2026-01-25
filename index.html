@@ -61,7 +61,15 @@
 
 <div class="nav-box">
     <button class="btn-ui" style="padding: 10px 20px;" onclick="changePage(currentPage-1)">KEMBALI</button>
-    <div id="page-info" style="font-size:13px; font-weight:800; color:var(--primary);">HALAMAN 1</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <div id="page-info" style="font-size:13px; font-weight:800; color:var(--primary);">HALAMAN 1</div>
+        <select id="rowsPerPageSelect" onchange="updateRowsPerPage(this.value)" style="border: 1px solid var(--border); border-radius: 4px; font-size: 11px; color: var(--text); background: var(--bg-soft); padding: 2px 8px; cursor: pointer; outline: none;">
+            <option value="10">10 Baris</option>
+            <option value="25">25 Baris</option>
+            <option value="50">50 Baris</option>
+            <option value="100">100 Baris</option>
+        </select>
+    </div>
     <button class="btn-ui" style="padding: 10px 20px;" onclick="changePage(currentPage+1)">LANJUT</button>
 </div>
 
