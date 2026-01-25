@@ -82,3 +82,24 @@ td input{border:none;padding:0 10px;font-size:13px;outline:none;background:trans
 
 .cat-item-select { padding: 15px; border: 1px solid var(--border); margin-bottom: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; }
 .cat-item-select:hover { background: var(--primary-light); }
+
+/* --- TAMBAHAN KHUSUS UNTUK FITUR READ-ONLY --- */
+
+/* Style input saat dalam mode readonly agar terlihat seperti teks biasa */
+input[readonly] {
+    cursor: default;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* Menandakan sel ID tidak bisa diklik pada mode readonly */
+.readonly-cell {
+    cursor: default !important;
+    pointer-events: none;
+}
+
+/* Sembunyikan elemen admin secara paksa jika diperlukan */
+.admin-hidden {
+    display: none !important;
+}
