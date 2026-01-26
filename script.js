@@ -1,11 +1,12 @@
+/* VARIABEL GLOBAL */
 let activeKey = 'default';
-// --- MODIFIKASI: CEK ROLE ---
 let isReadOnly = sessionStorage.getItem('erp_role') === 'viewer'; 
 let currentPage = 1, rowsPerPage = 10;
 let selectedRowIdx = null, selectedColIdx = null, searchQuery = "";
 let dateFilter = { start: "", end: "" };
 let openCats = JSON.parse(localStorage.getItem('erp_open_cats')) || ["UTAMA"];
 
+/* LOAD DATA DARI LOCAL STORAGE */
 let config = JSON.parse(localStorage.getItem('erp_clean_conf')) || {
     default: { title: "DASHBOARD UTAMA", category: "UTAMA", order: 0, cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
 };
@@ -13,6 +14,7 @@ let dataStore = JSON.parse(localStorage.getItem('erp_clean_data')) || {
     default: [["2024-01-01", "Saldo Awal", "0", "0", "0"]]
 };
 
+/* INISIALISASI DATE PICKER */
 const fp = flatpickr("#dateRangePicker", {
     mode: "range", dateFormat: "Y-m-d",
     onReady: function(s, d, instance) {
@@ -29,14 +31,7 @@ const fp = flatpickr("#dateRangePicker", {
     }
 });
 
-// --- FUNGSI UPDATE ROWS PER PAGE (POIN 8) ---
-function updateRowsPerPage(val) {
-    rowsPerPage = parseInt(val);
-    currentPage = 1; // Reset ke halaman 1
-    render();
-}
-
-// --- MODIFIKASI: LOGIN DUA AKUN ---
+/* FUNGSI AUTH */
 function login() {
     const u = document.getElementById('u').value, p = document.getElementById('p').value;
     if (u === 'P' && p === 'p') { 
@@ -47,19 +42,16 @@ function login() {
         sessionStorage.setItem('erp_is_logged', 'true');
         sessionStorage.setItem('erp_role', 'viewer');
         location.reload();
-    } else { 
-        alert("Username atau Password salah!"); 
-    }
-}
-if (sessionStorage.getItem('erp_is_logged') === 'true') document.getElementById('login-screen').style.display = 'none';
-
-// --- MODIFIKASI: LOCK SAVE JIKA READONLY ---
-function autoSave() { 
-    if (isReadOnly) return;
-    localStorage.setItem('erp_clean_conf', JSON.stringify(config)); 
-    localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); 
+    } else { alert("Username atau Password salah!"); }
 }
 
+if (sessionStorage.getItem('erp_is_logged') === 'true') {
+    document.getElementById('login-screen').style.display = 'none';
+}
+
+function logout() { if(confirm("Keluar?")) { sessionStorage.clear(); location.reload(); } }
+
+/* FUNGSI RENDER UTAMA */
 function renderSidebar() {
     const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
     let html = '';
@@ -72,16 +64,12 @@ function renderSidebar() {
     document.getElementById('sidebar-content').innerHTML = html;
 }
 
-function toggleCat(cat) {
-    if(openCats.includes(cat)) openCats = openCats.filter(c => c !== cat); else openCats.push(cat);
-    localStorage.setItem('erp_open_cats', JSON.stringify(openCats)); renderSidebar();
-}
-
 function render() {
-    renderSidebar(); document.getElementById('disp-title').innerText = config[activeKey].title;
+    renderSidebar(); 
+    document.getElementById('disp-title').innerText = config[activeKey].title;
+    
     let allCols = config[activeKey].cols;
     let hHtml = `<th class="row-num">ID</th>`;
-    // --- MODIFIKASI: HAPUS TEKS 'EDIT' JIKA READONLY ---
     allCols.forEach((c, i) => { 
         hHtml += `<th><div class="th-inner" onclick="${isReadOnly ? '' : `openFilter(${i})`}">${c} ${isReadOnly ? '' : 'EDIT'}</div></th>`; 
     });
@@ -94,7 +82,6 @@ function render() {
     let totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
     let paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     
-    // --- MODIFIKASI: LOCK INPUT & POPUP JIKA READONLY ---
     document.getElementById('table-body').innerHTML = paginated.map(item => `<tr>
         <td class="row-num" onclick="${isReadOnly ? '' : `openPopUp(${item.index})`}">${item.index + 1}</td>
         ${item.row.map((cell, ci) => `<td><input type="text" value="${cell}" ${isReadOnly ? 'readonly' : ''} oninput="upd(${item.index},${ci},this.value)"></td>`).join('')}
@@ -102,13 +89,92 @@ function render() {
     
     document.getElementById('page-info').innerText = `HALAMAN: ${currentPage} / ${totalPages}`;
     
-    // Sembunyikan tombol admin secara visual jika login sebagai user
     if (isReadOnly) {
         const adminElements = document.querySelectorAll('.toolbar button:nth-child(2), #sidebar button[onclick="openTableManager()"]');
         adminElements.forEach(el => el.style.display = 'none');
     }
 }
 
+/* FUNGSI MANAJEMEN DATA */
+function autoSave() { 
+    if (isReadOnly) return;
+    localStorage.setItem('erp_clean_conf', JSON.stringify(config)); 
+    localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); 
+}
+
+function updateRowsPerPage(val) { rowsPerPage = parseInt(val); currentPage = 1; render(); }
+
+function toggleCat(cat) {
+    if(openCats.includes(cat)) openCats = openCats.filter(c => c !== cat); else openCats.push(cat);
+    localStorage.setItem('erp_open_cats', JSON.stringify(openCats)); renderSidebar();
+}
+
+function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
+
+function upd(r, c, v) { if(isReadOnly) return; dataStore[activeKey][r][c] = v; autoSave(); }
+
+function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
+
+/* UI CONTROL */
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+
+function openPopUp(idx) { if(isReadOnly) return; selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
+function openFilter(colIdx) { if(isReadOnly) return; selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
+function openTableManager() { if(isReadOnly) return; document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
+function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
+
+function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
+
+function toggleDarkMode() { 
+    document.body.classList.toggle('dark-mode'); 
+    localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode')); 
+}
+if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
+
+/* AKSI TABEL */
+function handleSortData(dir) { 
+    dataStore[activeKey].sort((a, b) => { 
+        let vA = (a[selectedColIdx] || "").toString(), vB = (b[selectedColIdx] || "").toString(); 
+        return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA); 
+    }); 
+    autoSave(); render(); closeModal(); 
+}
+
+function handleExecAction(type) {
+    if (isReadOnly) return;
+    if (type === 'add_row') dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
+    if (type === 'add_col') { let n = prompt("KOLOM BARU:"); if(n){config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r=>r.push(""));}}
+    if (type === 'edit_header') { let n = prompt("GANTI NAMA:", config[activeKey].cols[selectedColIdx]); if(n) config[activeKey].cols[selectedColIdx]=n.toUpperCase(); }
+    if (type === 'del_row') dataStore[activeKey].splice(selectedRowIdx, 1);
+    if (type === 'del_col') { config[activeKey].cols.splice(selectedColIdx, 1); dataStore[activeKey].forEach(r=>r.splice(selectedColIdx,1)); }
+    if (type === 'clear_all' && confirm("Hapus semua isi tabel?")) dataStore[activeKey] = [];
+    autoSave(); render(); closeModal();
+}
+
+function fillColCurrentDate() { if(isReadOnly) return; let d = new Date().toISOString().split('T')[0]; dataStore[activeKey].forEach(r => r[selectedColIdx] = d); autoSave(); render(); closeModal(); }
+
+/* EXPORT / IMPORT */
+function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
+
+function importFromExcel(e) { 
+    if(isReadOnly) return; 
+    let f = e.target.files[0]; if(!f) return; 
+    let r = new FileReader(); 
+    r.onload = (ex) => { 
+        let d = new Uint8Array(ex.target.result), wb = XLSX.read(d, {type:'array'}); 
+        let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""}); 
+        if(rows.length > 0) { 
+            config[activeKey].cols = rows[0].map(h => h.toString().toUpperCase()); 
+            rows.shift(); dataStore[activeKey] = rows; autoSave(); render(); 
+        } 
+    }; 
+    r.readAsArrayBuffer(f); 
+}
+
+/* MANAJEMEN TABEL LANJUTAN */
 function openCatPicker() {
     if(isReadOnly) return;
     const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
@@ -149,31 +215,6 @@ function deleteCategory() {
     }
 }
 function changePage(p) { let t = Math.ceil(dataStore[activeKey].length/rowsPerPage) || 1; if(p >= 1 && p <= t) { currentPage = p; render(); } }
-function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
-function upd(r, c, v) { if(isReadOnly) return; dataStore[activeKey][r][c] = v; autoSave(); }
-function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
-function openPopUp(idx) { if(isReadOnly) return; selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-function openFilter(colIdx) { if(isReadOnly) return; selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-function openTableManager() { if(isReadOnly) return; document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
-function logout() { if(confirm("Keluar?")) { sessionStorage.clear(); location.reload(); } }
-function toggleDarkMode() { document.body.classList.toggle('dark-mode'); localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode')); }
-if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
-function handleSortData(dir) { dataStore[activeKey].sort((a, b) => { let vA = (a[selectedColIdx] || "").toString(), vB = (b[selectedColIdx] || "").toString(); return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA); }); autoSave(); render(); closeModal(); }
-function handleExecAction(type) {
-    if (isReadOnly) return;
-    if (type === 'add_row') dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
-    if (type === 'add_col') { let n = prompt("KOLOM BARU:"); if(n){config[activeKey].cols.push(n.toUpperCase()); dataStore[activeKey].forEach(r=>r.push(""));}}
-    if (type === 'edit_header') { let n = prompt("GANTI NAMA:", config[activeKey].cols[selectedColIdx]); if(n) config[activeKey].cols[selectedColIdx]=n.toUpperCase(); }
-    if (type === 'del_row') dataStore[activeKey].splice(selectedRowIdx, 1);
-    if (type === 'del_col') { config[activeKey].cols.splice(selectedColIdx, 1); dataStore[activeKey].forEach(r=>r.splice(selectedColIdx,1)); }
-    if (type === 'clear_all' && confirm("Hapus semua isi tabel?")) dataStore[activeKey] = [];
-    autoSave(); render(); closeModal();
-}
-function fillColCurrentDate() { if(isReadOnly) return; let d = new Date().toISOString().split('T')[0]; dataStore[activeKey].forEach(r => r[selectedColIdx] = d); autoSave(); render(); closeModal(); }
-function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
-function importFromExcel(e) { if(isReadOnly) return; let f = e.target.files[0]; if(!f) return; let r = new FileReader(); r.onload = (ex) => { let d = new Uint8Array(ex.target.result), wb = XLSX.read(d, {type:'array'}); let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""}); if(rows.length > 0) { config[activeKey].cols = rows[0].map(h => h.toString().toUpperCase()); rows.shift(); dataStore[activeKey] = rows; autoSave(); render(); } }; r.readAsArrayBuffer(f); }
 
+/* Jalankan render pertama kali */
 render();
