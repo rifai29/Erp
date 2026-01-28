@@ -6,7 +6,7 @@ let selectedRowIdx = null, selectedColIdx = null, searchQuery = "";
 let dateFilter = { start: "", end: "" };
 let openCats = JSON.parse(localStorage.getItem('erp_open_cats')) || ["UTAMA"];
 
-/* LOAD DATA DARI LOCAL STORAGE */
+/* LOAD DATA */
 let config = JSON.parse(localStorage.getItem('erp_clean_conf')) || {
     default: { title: "DASHBOARD UTAMA", category: "UTAMA", order: 0, cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
 };
@@ -14,7 +14,7 @@ let dataStore = JSON.parse(localStorage.getItem('erp_clean_data')) || {
     default: [["2024-01-01", "Saldo Awal", "0", "0", "0"]]
 };
 
-/* INISIALISASI DATE PICKER */
+/* DATE PICKER */
 const fp = flatpickr("#dateRangePicker", {
     mode: "range", dateFormat: "Y-m-d",
     onReady: function(s, d, instance) {
@@ -31,27 +31,39 @@ const fp = flatpickr("#dateRangePicker", {
     }
 });
 
-/* FUNGSI AUTH */
+/* AUTH */
 function login() {
-    const u = document.getElementById('u').value, p = document.getElementById('p').value;
-    if (u === 'P' && p === 'p') { 
+    const p = document.getElementById('p').value;
+    if (p === 'p') { 
         sessionStorage.setItem('erp_is_logged', 'true'); 
         sessionStorage.setItem('erp_role', 'admin');
         location.reload(); 
-    } else if (u === 'O' && p === 'o') {
-        sessionStorage.setItem('erp_is_logged', 'true');
-        sessionStorage.setItem('erp_role', 'viewer');
-        location.reload();
-    } else { alert("Username atau Password salah!"); }
+    } else { alert("Password salah!"); }
+}
+
+function viewMode() {
+    sessionStorage.setItem('erp_is_logged', 'true');
+    sessionStorage.setItem('erp_role', 'viewer');
+    location.reload();
 }
 
 if (sessionStorage.getItem('erp_is_logged') === 'true') {
     document.getElementById('login-screen').style.display = 'none';
+    const role = sessionStorage.getItem('erp_role');
+    const badge = document.getElementById('modeBadge');
+    badge.style.display = 'block';
+    if (role === 'viewer') {
+        badge.innerText = 'MODE LIHAT';
+    } else {
+        badge.innerText = 'MODE ADMIN';
+        badge.style.background = '#d4edda';
+        badge.style.color = '#155724';
+    }
 }
 
 function logout() { if(confirm("Keluar?")) { sessionStorage.clear(); location.reload(); } }
 
-/* FUNGSI RENDER UTAMA */
+/* RENDER */
 function renderSidebar() {
     const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
     let html = '';
@@ -71,7 +83,7 @@ function render() {
     let allCols = config[activeKey].cols;
     let hHtml = `<th class="row-num">ID</th>`;
     allCols.forEach((c, i) => { 
-        hHtml += `<th><div class="th-inner" onclick="${isReadOnly ? '' : `openFilter(${i})`}">${c} ${isReadOnly ? '' : 'EDIT'}</div></th>`; 
+        hHtml += `<th><div class="th-inner" onclick="${isReadOnly ? '' : `openFilter(${i})`}">${c} ${isReadOnly ? '' : '<span style="font-size:9px;">EDIT</span>'}</div></th>`; 
     });
     document.getElementById('table-head').innerHTML = hHtml;
     
@@ -90,12 +102,12 @@ function render() {
     document.getElementById('page-info').innerText = `HALAMAN: ${currentPage} / ${totalPages}`;
     
     if (isReadOnly) {
-        const adminElements = document.querySelectorAll('.toolbar button:nth-child(2), #sidebar button[onclick="openTableManager()"]');
-        adminElements.forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn[onclick="openTableManager()"]').forEach(el => el.style.display = 'none');
     }
 }
 
-/* FUNGSI MANAJEMEN DATA */
+/* LOGIC */
 function autoSave() { 
     if (isReadOnly) return;
     localStorage.setItem('erp_clean_conf', JSON.stringify(config)); 
@@ -103,38 +115,25 @@ function autoSave() {
 }
 
 function updateRowsPerPage(val) { rowsPerPage = parseInt(val); currentPage = 1; render(); }
-
 function toggleCat(cat) {
     if(openCats.includes(cat)) openCats = openCats.filter(c => c !== cat); else openCats.push(cat);
     localStorage.setItem('erp_open_cats', JSON.stringify(openCats)); renderSidebar();
 }
-
 function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
-
 function upd(r, c, v) { if(isReadOnly) return; dataStore[activeKey][r][c] = v; autoSave(); }
-
 function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
-
-/* UI CONTROL */
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
-
 function openPopUp(idx) { if(isReadOnly) return; selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-
 function openFilter(colIdx) { if(isReadOnly) return; selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-
 function openTableManager() { if(isReadOnly) return; document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
-
 function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
-
 function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
-
 function toggleDarkMode() { 
     document.body.classList.toggle('dark-mode'); 
     localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode')); 
 }
 if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
 
-/* AKSI TABEL */
 function handleSortData(dir) { 
     dataStore[activeKey].sort((a, b) => { 
         let vA = (a[selectedColIdx] || "").toString(), vB = (b[selectedColIdx] || "").toString(); 
@@ -156,7 +155,6 @@ function handleExecAction(type) {
 
 function fillColCurrentDate() { if(isReadOnly) return; let d = new Date().toISOString().split('T')[0]; dataStore[activeKey].forEach(r => r[selectedColIdx] = d); autoSave(); render(); closeModal(); }
 
-/* EXPORT / IMPORT */
 function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
 
 function importFromExcel(e) { 
@@ -174,7 +172,7 @@ function importFromExcel(e) {
     r.readAsArrayBuffer(f); 
 }
 
-/* MANAJEMEN TABEL LANJUTAN */
+/* TABLE MANAGER LOGIC */
 function openCatPicker() {
     if(isReadOnly) return;
     const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
@@ -216,5 +214,5 @@ function deleteCategory() {
 }
 function changePage(p) { let t = Math.ceil(dataStore[activeKey].length/rowsPerPage) || 1; if(p >= 1 && p <= t) { currentPage = p; render(); } }
 
-/* Jalankan render pertama kali */
+// Jalankan awal
 render();
