@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP BETA - Full Version</title>
+    <title>ENTERPRISE RESOURCE PLANNING | BETA</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="login-screen">
     <div class="login-card">
-        <h2>ERP BETA</h2>
+        <h2>ENTERPRISE RESOURCE PLANNING | BETA</h2>
         <p>Masukkan password untuk akses penuh</p>
         <input type="password" id="p" placeholder="Password" onkeypress="if(event.key==='Enter')login()">
         <div class="login-buttons">
@@ -100,7 +102,7 @@
 </div>
 
 <div id="sheet-table-manager" class="sheet">
-    <div class="sheet-header"><strong>PENGELOLA TABEL</strong><button class="close-btn" onclick="modalCloseTableManager()">TUTUP</button></div>
+    <div class="sheet-header"><strong>PENGELOLA TABEL</strong><button class="close-btn" onclick="closeModal()">TUTUP</button></div>
     <div id="manager-content"></div>
     <div style="display: flex; flex-direction: column; gap: 12px;">
         <button class="btn-ui" style="padding:15px; color:var(--primary);" onclick="createNewTable()">BUAT TABEL BARU</button>

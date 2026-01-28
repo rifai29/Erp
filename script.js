@@ -6,7 +6,7 @@ let selectedRowIdx = null, selectedColIdx = null, searchQuery = "";
 let dateFilter = { start: "", end: "" };
 let openCats = JSON.parse(localStorage.getItem('erp_open_cats')) || ["UTAMA"];
 
-/* LOAD DATA */
+/* LOAD DATA DARI LOCAL STORAGE */
 let config = JSON.parse(localStorage.getItem('erp_clean_conf')) || {
     default: { title: "DASHBOARD UTAMA", category: "UTAMA", order: 0, cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"] }
 };
@@ -14,7 +14,7 @@ let dataStore = JSON.parse(localStorage.getItem('erp_clean_data')) || {
     default: [["2024-01-01", "Saldo Awal", "0", "0", "0"]]
 };
 
-/* DATE PICKER */
+/* INISIALISASI DATE PICKER */
 const fp = flatpickr("#dateRangePicker", {
     mode: "range", dateFormat: "Y-m-d",
     onReady: function(s, d, instance) {
@@ -31,14 +31,16 @@ const fp = flatpickr("#dateRangePicker", {
     }
 });
 
-/* AUTH */
+/* FUNGSI AUTH */
 function login() {
     const p = document.getElementById('p').value;
     if (p === 'p') { 
         sessionStorage.setItem('erp_is_logged', 'true'); 
         sessionStorage.setItem('erp_role', 'admin');
         location.reload(); 
-    } else { alert("Password salah!"); }
+    } else { 
+        alert("Password salah!"); 
+    }
 }
 
 function viewMode() {
@@ -63,7 +65,7 @@ if (sessionStorage.getItem('erp_is_logged') === 'true') {
 
 function logout() { if(confirm("Keluar?")) { sessionStorage.clear(); location.reload(); } }
 
-/* RENDER */
+/* FUNGSI RENDER UTAMA */
 function renderSidebar() {
     const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
     let html = '';
@@ -107,7 +109,7 @@ function render() {
     }
 }
 
-/* LOGIC */
+/* FUNGSI MANAJEMEN DATA */
 function autoSave() { 
     if (isReadOnly) return;
     localStorage.setItem('erp_clean_conf', JSON.stringify(config)); 
@@ -115,29 +117,42 @@ function autoSave() {
 }
 
 function updateRowsPerPage(val) { rowsPerPage = parseInt(val); currentPage = 1; render(); }
+
 function toggleCat(cat) {
     if(openCats.includes(cat)) openCats = openCats.filter(c => c !== cat); else openCats.push(cat);
     localStorage.setItem('erp_open_cats', JSON.stringify(openCats)); renderSidebar();
 }
+
 function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
+
 function upd(r, c, v) { if(isReadOnly) return; dataStore[activeKey][r][c] = v; autoSave(); }
+
 function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
+
+/* UI CONTROL */
 function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+
 function openPopUp(idx) { if(isReadOnly) return; selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
 function openFilter(colIdx) { if(isReadOnly) return; selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
 function openTableManager() { if(isReadOnly) return; document.getElementById('sheet-table-manager').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
 function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
+
 function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
+
 function toggleDarkMode() { 
     document.body.classList.toggle('dark-mode'); 
     localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode')); 
 }
 if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
 
+/* AKSI TABEL */
 function handleSortData(dir) { 
     dataStore[activeKey].sort((a, b) => { 
         let vA = (a[selectedColIdx] || "").toString(), vB = (b[selectedColIdx] || "").toString(); 
-        return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA); 
+        return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(a); 
     }); 
     autoSave(); render(); closeModal(); 
 }
@@ -155,7 +170,13 @@ function handleExecAction(type) {
 
 function fillColCurrentDate() { if(isReadOnly) return; let d = new Date().toISOString().split('T')[0]; dataStore[activeKey].forEach(r => r[selectedColIdx] = d); autoSave(); render(); closeModal(); }
 
-function exportToExcel() { let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Data"); XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); }
+/* EXPORT / IMPORT */
+function exportToExcel() { 
+    let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); 
+    let wb = XLSX.utils.book_new(); 
+    XLSX.utils.book_append_sheet(wb, ws, "Data"); 
+    XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); 
+}
 
 function importFromExcel(e) { 
     if(isReadOnly) return; 
@@ -166,13 +187,16 @@ function importFromExcel(e) {
         let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""}); 
         if(rows.length > 0) { 
             config[activeKey].cols = rows[0].map(h => h.toString().toUpperCase()); 
-            rows.shift(); dataStore[activeKey] = rows; autoSave(); render(); 
+            rows.shift(); 
+            dataStore[activeKey] = rows; 
+            autoSave(); 
+            render(); 
         } 
     }; 
     r.readAsArrayBuffer(f); 
 }
 
-/* TABLE MANAGER LOGIC */
+/* MANAJEMEN TABEL LANJUTAN */
 function openCatPicker() {
     if(isReadOnly) return;
     const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
@@ -181,10 +205,22 @@ function openCatPicker() {
     document.getElementById('cat-list-box').innerHTML = html;
     document.getElementById('sheet-cat-picker').classList.add('active');
 }
+
 function selectExistingCat(catName) { config[activeKey].category = catName; autoSave(); render(); closeCatPicker(); closeModal(); }
-function applyNewCat() { let val = document.getElementById('newCatInp').value; if(val) { selectExistingCat(val.toUpperCase()); document.getElementById('newCatInp').value = ""; } }
+
+function applyNewCat() { 
+    let val = document.getElementById('newCatInp').value; 
+    if(val) { selectExistingCat(val.toUpperCase()); document.getElementById('newCatInp').value = ""; } 
+}
+
 function closeCatPicker() { document.getElementById('sheet-cat-picker').classList.remove('active'); }
-function renameTable() { if(isReadOnly) return; let n = prompt("NAMA BARU:", config[activeKey].title); if(n){config[activeKey].title = n.toUpperCase(); autoSave(); render(); closeModal();} }
+
+function renameTable() { 
+    if(isReadOnly) return; 
+    let n = prompt("NAMA BARU:", config[activeKey].title); 
+    if(n){config[activeKey].title = n.toUpperCase(); autoSave(); render(); closeModal();} 
+}
+
 function moveTable(dir) {
     if(isReadOnly) return;
     let keys = Object.keys(config).filter(k => config[k].category === config[activeKey].category).sort((a,b) => (config[a].order || 0) - (config[b].order || 0));
@@ -193,6 +229,7 @@ function moveTable(dir) {
     else if(dir==='down' && idx < keys.length-1) [config[keys[idx]].order, config[keys[idx+1]].order] = [config[keys[idx+1]].order, config[keys[idx]].order];
     autoSave(); render();
 }
+
 function createNewTable() { 
     if(isReadOnly) return;
     let n = prompt("NAMA TABEL BARU:"); 
@@ -203,7 +240,16 @@ function createNewTable() {
         activeKey = k; autoSave(); render(); closeModal(); 
     } 
 }
-function deleteCurrentTable() { if(!isReadOnly && Object.keys(config).length > 1 && confirm("Hapus tabel ini?")){ delete config[activeKey]; delete dataStore[activeKey]; activeKey = Object.keys(config)[0]; autoSave(); render(); closeModal(); } }
+
+function deleteCurrentTable() { 
+    if(!isReadOnly && Object.keys(config).length > 1 && confirm("Hapus tabel ini?")){ 
+        delete config[activeKey]; 
+        delete dataStore[activeKey]; 
+        activeKey = Object.keys(config)[0]; 
+        autoSave(); render(); closeModal(); 
+    } 
+}
+
 function deleteCategory() {
     if(isReadOnly) return;
     let cat = prompt("Nama Kategori yang akan dihapus:");
@@ -212,7 +258,11 @@ function deleteCategory() {
         autoSave(); render(); closeModal();
     }
 }
-function changePage(p) { let t = Math.ceil(dataStore[activeKey].length/rowsPerPage) || 1; if(p >= 1 && p <= t) { currentPage = p; render(); } }
 
-// Jalankan awal
+function changePage(p) { 
+    let t = Math.ceil(dataStore[activeKey].length/rowsPerPage) || 1; 
+    if(p >= 1 && p <= t) { currentPage = p; render(); } 
+}
+
+/* Jalankan render pertama kali */
 render();
