@@ -4,12 +4,732 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ENTERPRISE RESOURCE PLANNING | BETA</title>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     
-    <link rel="stylesheet" href="style.css">
+    <style>
+        :root { 
+            --border: #e0e0e0;
+            --bg-main: #ffffff;
+            --bg-soft: #f9f9f9;
+            --primary: #1a73e8;
+            --primary-light: #e8f0fe;
+            --text: #3c4043;
+            --danger: #d93025;
+            --success: #2e7d32;
+            --overlay-bg: rgba(0,0,0,0.4);
+            --warning: #f29900;
+            --archive: #9e9e9e;
+        }
+
+        body.dark-mode {
+            --bg-main: #121212;
+            --bg-soft: #1e1e1e;
+            --text: #e0e0e0;
+            --border: #333333;
+            --primary-light: #1a2332;
+            --primary: #4a9eff;
+        }
+        
+        body.dark-mode .stat-label,
+        body.dark-mode .card-actions .btn-action {
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .management-card {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+        }
+        
+        body.dark-mode .management-card.selected {
+            background: #1a2332;
+            border-color: #4a9eff;
+        }
+        
+        body.dark-mode .stat-card {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+        }
+        
+        body.dark-mode .search-filter-bar input,
+        body.dark-mode .search-filter-bar select {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .search-filter-bar input:focus {
+            border-color: #4a9eff;
+            box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+        }
+        
+        body.dark-mode .bulk-actions-bar {
+            background: #1a2332;
+            border-color: #4a9eff;
+        }
+        
+        body.dark-mode .management-actions .btn-action-main.btn-backup,
+        body.dark-mode .management-actions .btn-action-main.btn-restore {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border: 1px solid #2a2a2a;
+        }
+        
+        body.dark-mode .card-actions .btn-action {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode .card-actions .btn-action.primary {
+            background: #4a9eff;
+            color: #121212;
+            border-color: #4a9eff;
+        }
+        
+        body.dark-mode .card-actions .btn-action.warning {
+            color: #f29900;
+            border-color: #f29900;
+        }
+        
+        body.dark-mode .card-actions .btn-action.danger {
+            color: #d93025;
+            border-color: #d93025;
+        }
+        
+        body.dark-mode .card-actions .btn-action:hover {
+            background: #252525;
+        }
+        
+        body.dark-mode .card-actions .btn-action.warning:hover {
+            background: #f29900;
+            color: #121212;
+        }
+        
+        body.dark-mode .card-actions .btn-action.danger:hover {
+            background: #d93025;
+            color: white;
+        }
+        
+        body.dark-mode .category-title {
+            border-bottom-color: #2a2a2a;
+        }
+        
+        body.dark-mode .category-count {
+            background: #1a2332;
+            color: #4a9eff;
+        }
+        
+        body.dark-mode .checkbox-card {
+            border-color: #3a3a3a;
+            background: #1a1a1a;
+        }
+        
+        body.dark-mode .checkbox-card.checked {
+            background: #4a9eff;
+            border-color: #4a9eff;
+        }
+        
+        body.dark-mode .badge-archive {
+            background: #3a3a3a;
+            color: #b0b0b0;
+        }
+        
+        body.dark-mode #table-head th {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+        }
+        
+        body.dark-mode td {
+            border-color: #2a2a2a;
+        }
+        
+        body.dark-mode .row-num {
+            background: #1a1a1a;
+        }
+        
+        body.dark-mode .flatpickr-calendar {
+            background: #1a1a1a !important;
+            border-color: #2a2a2a !important;
+        }
+        
+        body.dark-mode .flatpickr-day {
+            color: #e0e0e0 !important;
+        }
+        
+        body.dark-mode .flatpickr-day:hover {
+            background: #2a2a2a !important;
+        }
+        
+        body.dark-mode .flatpickr-day.selected {
+            background: #4a9eff !important;
+            border-color: #4a9eff !important;
+        }
+        
+        body.dark-mode .sheet {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+        }
+        
+        body.dark-mode .btn-ui {
+            background: #1a1a1a;
+            border-color: #2a2a2a;
+            color: #e0e0e0;
+        }
+        
+        body.dark-mode .btn-ui:hover {
+            background: #252525;
+        }
+        
+        body.dark-mode .cat-header:hover {
+            background: #252525;
+        }
+        
+        body.dark-mode .tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        body.dark-mode .preview-table th {
+            background: #4a9eff;
+            color: #121212;
+        }
+        
+        body.dark-mode .preview-table td {
+            border-color: #2a2a2a;
+        }
+
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+        body{
+            font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+            line-height:1.5;
+            background:var(--bg-main);
+            color:var(--text);
+            overflow:auto;
+            display:flex;
+            flex-direction:column;
+            min-height:100vh;
+            transition:background .3s;
+        }
+
+        .flatpickr-calendar { border-radius: 15px !important; box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important; border: none !important; }
+        .flatpickr-day.selected { background: var(--primary) !important; border-color: var(--primary) !important; }
+        .flatpickr-clear-button { width: 100%; background: var(--danger); color: white; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
+
+        /* LAYAR LOGIN */
+        #login-screen { 
+            position: fixed; 
+            inset: 0; 
+            background: #ffffff;
+            z-index: 9999; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .login-card { 
+            background: #ffffff; 
+            padding: 40px 30px; 
+            width: 90%; 
+            max-width: 380px; 
+            text-align: center;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .login-card h2 {
+            font-size: 20px;
+            color: #1a73e8;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            line-height: 1.3;
+        }
+        .login-card p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 35px;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .login-card input:focus {
+            border-color: #1a73e8;
+            box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+        }
+        .login-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .login-card button {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-login {
+            background: #1a73e8;
+            color: #ffffff;
+        }
+        .btn-login:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26, 115, 232, 0.4);
+        }
+        .btn-view {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .btn-view:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* HEADER & SIDEBAR */
+        header{padding:0 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;background:var(--bg-main);height:50px;justify-content:space-between;flex-shrink:0}
+        #sidebar { 
+            width: 280px; background: var(--bg-main); position: fixed; left: -280px; height: 100%; 
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1100; border-radius: 0 30px 30px 0; 
+            display: flex; flex-direction: column; box-shadow: 15px 0 50px rgba(0,0,0,0.1);
+        }
+        #sidebar.active { left: 0; }
+        .sidebar-header { padding: 30px 25px 10px; font-weight: 800; font-size: 12px; color: var(--text); letter-spacing: 0.5px; line-height: 1.4; }
+        .cat-group { }
+        .cat-header { width: 100%; padding: 15px 25px; background: var(--bg-main); border: none; text-align: left; font-weight: 800; font-size: 12px; color: var(--text); cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; transition: 0.2s; }
+        .cat-header:hover { background: #f9f9f9; }
+        .cat-content { display: none; background: var(--bg-soft); }
+        .cat-content.active { display: block; }
+        .tab-btn{width:100%;padding:15px 25px;border:none;background:transparent;text-align:left;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);transition:0.2s}
+        .tab-btn:hover{background:rgba(0,0,0,0.05);}
+        .tab-btn.active{color:var(--text);background:var(--bg-main);}
+        .tab-btn.archived { opacity: 0.5; font-style: italic; }
+
+        /* UI COMPONENTS */
+        .btn-ui{padding:8px 16px;border:1px solid var(--border);background:var(--bg-main);color:var(--text);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:0.2s; text-align: center;}
+        .btn-ui:hover { opacity: 0.8; }
+        .toolbar{display:flex;flex-direction:column;gap:8px;background:var(--bg-soft);padding:12px 15px;border-bottom:1px solid var(--border);flex-shrink:0}
+        .date-input-container { display: flex; align-items: center; background: var(--bg-main); border: 1px solid var(--primary); border-radius: 10px; }
+        #dateRangePicker { flex-grow: 1; border: none; padding: 12px; font-size: 13px; background: transparent; color: var(--text); font-weight: 600; outline: none; text-align: center; }
+
+        /* TABLE */
+        .table-container{flex-grow:1;overflow:auto;background:var(--bg-main); position: relative;}
+        table{border-collapse:collapse;width:100%;table-layout: fixed;}
+        th{background:var(--bg-soft);padding:0;border:1px solid var(--border);font-size:11px;position:sticky;top:0;z-index:10;color:var(--text); width: 130px;}
+        .th-inner{display:flex;align-items:center;justify-content:space-between;padding:10px;cursor:pointer}
+        td{border:1px solid var(--border);padding:0;height:48px; width: 130px;}
+        td input{border:none;padding:0 10px;font-size:13px;outline:none;background:transparent;width:100%;height:100%;color:var(--text);}
+        .row-num{width:65px !important; background:var(--bg-soft); text-align:center; font-size:12px; font-weight:800; color:var(--primary); cursor:pointer;}
+
+        /* NOTIF & OVERLAY */
+        #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%)translateY(-100px);background:#323232;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:10000;transition:0.3s;}
+        #toast.active{transform:translateX(-50%)translateY(0)}
+        #overlay{display:none;position:fixed;inset:0;background:var(--overlay-bg);z-index:1050;backdrop-filter:blur(2px)}
+        #overlay.active{display:block}
+
+        /* NAVIGATION & SHEETS */
+        .nav-box{display:flex; justify-content: space-between; align-items: center; padding:12px; background:var(--bg-main); border-top:2px solid var(--primary); position:sticky; bottom:0; z-index:100}
+        .sheet{
+            position:fixed;
+            top:50%;
+            left:50%;
+            transform:translate(-50%, -50%) scale(0.7);
+            opacity:0;
+            background:var(--bg-main);
+            z-index:5000;
+            border-radius:16px;
+            padding:25px 20px;
+            transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+            max-width:600px;
+            width:90%;
+            box-shadow:0 10px 40px rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            max-height: 85vh;
+            overflow-y: auto;
+            pointer-events:none;
+        }
+        .sheet.active{
+            transform:translate(-50%, -50%) scale(1);
+            opacity:1;
+            pointer-events:auto;
+        }
+        .sheet-header{display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;}
+        .close-btn{background:var(--bg-soft); border:none; padding:8px 15px; border-radius:8px; font-weight:bold; cursor:pointer; color:var(--danger);}
+        .cat-item-select { padding: 15px; border: 1px solid var(--border); margin-bottom: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        .cat-item-select:hover { background: var(--primary-light); }
+
+        /* MANAGEMENT SPECIFIC - IMPROVED */
+        .management-card {
+            background: var(--bg-soft);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 6px;
+            transition: all 0.2s;
+        }
+        .management-card.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .management-card.archived {
+            opacity: 0.6;
+            border-style: dashed;
+        }
+        .checkbox-card {
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-radius: 3px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .checkbox-card:hover {
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+        .checkbox-card.checked {
+            background: var(--primary);
+            border-color: var(--primary);
+            position: relative;
+        }
+        .checkbox-card.checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        /* IMPROVED CARD ACTIONS */
+        .card-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-top: 6px;
+        }
+        
+        .card-actions .btn-action {
+            padding: 6px 4px;
+            font-size: 9px;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            background: var(--bg-main);
+            color: var(--text);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .card-actions .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .card-actions .btn-action.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .card-actions .btn-action.warning {
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+        
+        .card-actions .btn-action.warning:hover {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .card-actions .btn-action.danger {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
+        
+        .card-actions .btn-action.danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .stat-card {
+            background: var(--bg-soft);
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 2px;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 9px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            line-height: 1.2;
+        }
+        
+        .search-filter-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 10px;
+            align-items: stretch;
+        }
+        
+        .search-filter-bar input {
+            flex-grow: 1;
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        
+        .search-filter-bar input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.1);
+        }
+        
+        .search-filter-bar select {
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 11px;
+            color: var(--text);
+            background: var(--bg-main);
+            padding: 8px 10px;
+            cursor: pointer;
+            outline: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .search-filter-bar select:hover {
+            border-color: var(--primary);
+        }
+        
+        .bulk-actions-bar {
+            display: none;
+            background: var(--primary-light);
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            gap: 6px;
+            align-items: center;
+            border: 1px solid var(--primary);
+        }
+        .bulk-actions-bar.active {
+            display: flex;
+        }
+        
+        .bulk-actions-bar .btn-ui {
+            padding: 6px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 5px;
+        }
+        
+        /* ACTION BUTTONS SECTION */
+        .management-actions {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .management-actions .btn-action-main {
+            flex: 1;
+            min-width: 80px;
+            padding: 7px 10px;
+            font-size: 10px;
+            font-weight: 700;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        
+        .management-actions .btn-action-main:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .management-actions .btn-create {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .management-actions .btn-export {
+            background: var(--success);
+            color: white;
+        }
+        
+        .management-actions .btn-backup {
+            background: var(--bg-soft);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+        
+        .management-actions .btn-restore {
+            background: var(--bg-soft);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        /* CUSTOM GRID ICON */
+        .grid-icon {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 4px);
+            grid-template-rows: repeat(3, 4px);
+            gap: 2px;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+        .grid-icon span {
+            background: currentColor;
+            border-radius: 1px;
+        }
+
+        /* CUSTOM POWER ICON */
+        .power-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+        .power-icon::before {
+            content: '';
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            border: 2.5px solid currentColor;
+            border-radius: 50%;
+            border-top: 2.5px solid transparent;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .power-icon::after {
+            content: '';
+            position: absolute;
+            width: 2.5px;
+            height: 10px;
+            background: currentColor;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        /* PREVIEW TABLE */
+        .preview-table {
+            max-height: 300px;
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .preview-table table {
+            font-size: 11px;
+        }
+        .preview-table th {
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            font-weight: 600;
+        }
+        .preview-table td {
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+        }
+        
+        /* CATEGORY HEADER */
+        .category-section {
+            margin-bottom: 15px;
+        }
+        
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .category-title h3 {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .category-count {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 800;
+        }
+
+        /* UTILITY */
+        input[readonly] { cursor: default; background-color: transparent !important; border: none !important; outline: none !important; }
+        .readonly-cell { cursor: default !important; pointer-events: none; }
+        .admin-hidden { display: none !important; }
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 700;
+            margin-left: 6px;
+            letter-spacing: 0.3px;
+        }
+        .badge-archive {
+            background: var(--archive);
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
@@ -28,23 +748,17 @@
 <div id="overlay" onclick="closeAll()"></div>
 <div id="toast">Notifikasi</div>
 
-<div class="mode-badge" id="modeBadge" style="display:none;"></div>
-
 <div id="sidebar">
-    <div class="sidebar-header">MENU UTAMA</div>
+    <div class="sidebar-header" id="sidebarHeader">RIFAKHI RINDHOI SETIAWAN</div>
     <div style="flex-grow: 1; overflow-y: auto;" id="sidebar-content"></div>
-    <div style="padding: 15px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px;">
-        <button class="tab-btn" onclick="openTableManager()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 12px;">PENGELOLA TABEL</button>
-        <button class="tab-btn" onclick="toggleDarkMode()" style="background: rgba(26, 115, 232, 0.1); color: var(--primary); border-radius: 12px;">GANTI TEMA</button>
-        <button class="tab-btn" onclick="logout()" style="background: rgba(217, 48, 37, 0.1); color: var(--danger); border-radius: 12px; text-align: center;">LOGOUT</button>
-    </div>
 </div>
 
 <header>
     <div style="display:flex;align-items:center;gap:12px;">
-        <button onclick="toggleSidebar()" style="background:var(--bg-soft);border:1px solid var(--border);padding:8px 12px;border-radius:6px;font-weight:bold;">MENU</button>
+        <button onclick="toggleSidebar()" style="background:transparent;border:none;padding:8px 12px;border-radius:6px;font-weight:bold;font-size:20px;color:var(--text);cursor:pointer;">☰</button>
         <div id="disp-title" style="font-weight:600;font-size:15px;color:var(--primary);text-transform:uppercase;">Dashboard</div>
     </div>
+    <button onclick="logout()" style="background:transparent;border:none;padding:8px 12px;font-size:20px;color:var(--danger);cursor:pointer;" title="Logout"><span class="power-icon"></span></button>
 </header>
 
 <div class="toolbar">
@@ -126,6 +840,959 @@
     </div>
 </div>
 
-<script src="script.js"></script>
+<div id="custom-prompt-modal" class="sheet" style="z-index: 7000;">
+    <div class="sheet-header"><strong id="prompt-title">INPUT</strong><button class="close-btn" onclick="closeCustomPrompt()">BATAL</button></div>
+    <div style="padding: 10px 0;">
+        <input type="text" id="custom-prompt-input" placeholder="Masukkan nilai..." style="width:100%; padding:15px; border-radius:10px; border:2px solid var(--primary); font-size: 14px; outline: none;">
+    </div>
+    <button class="btn-ui" id="custom-prompt-ok" style="width:100%; background:var(--primary); color:white; padding:15px; font-weight: 700; border: none;">OK</button>
+</div>
+
+<div id="custom-confirm-modal" class="sheet" style="z-index: 7000;">
+    <div class="sheet-header"><strong id="confirm-title">KONFIRMASI</strong></div>
+    <div style="padding: 20px 0;">
+        <p id="confirm-message" style="font-size: 14px; text-align: center; color: var(--text); line-height: 1.6;"></p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button class="btn-ui" id="custom-confirm-cancel" style="flex: 1; padding:15px; font-weight: 700;">BATAL</button>
+        <button class="btn-ui" id="custom-confirm-ok" style="flex: 1; background:var(--danger); color:white; padding:15px; font-weight: 700; border: none;">HAPUS</button>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div id="sheet-preview" class="sheet" style="max-width: 800px;">
+    <div class="sheet-header"><strong id="preview-title">PREVIEW DATA</strong><button class="close-btn" onclick="closePreview()">TUTUP</button></div>
+    <div id="preview-content"></div>
+</div>
+
+<script>
+/* VARIABEL GLOBAL */
+let activeKey = 'default';
+let isReadOnly = sessionStorage.getItem('erp_role') === 'viewer'; 
+let currentPage = 1, rowsPerPage = 10;
+let selectedRowIdx = null, selectedColIdx = null, searchQuery = "";
+let dateFilter = { start: "", end: "" };
+let openCats = JSON.parse(localStorage.getItem('erp_open_cats')) || ["UTAMA"];
+let customPromptCallback = null;
+let selectedTables = new Set();
+let managementSearchQuery = "";
+let managementSortBy = "name"; // name, date, size
+
+/* CUSTOM PROMPT */
+function customPrompt(title, placeholder, defaultValue, callback) {
+    document.getElementById('prompt-title').innerText = title;
+    document.getElementById('custom-prompt-input').placeholder = placeholder;
+    document.getElementById('custom-prompt-input').value = defaultValue || '';
+    document.getElementById('custom-prompt-modal').classList.add('active');
+    document.getElementById('overlay').classList.add('active');
+    
+    customPromptCallback = callback;
+    
+    setTimeout(() => {
+        document.getElementById('custom-prompt-input').focus();
+    }, 100);
+    
+    document.getElementById('custom-prompt-input').onkeypress = function(e) {
+        if (e.key === 'Enter') {
+            executeCustomPrompt();
+        }
+    };
+    
+    document.getElementById('custom-prompt-ok').onclick = executeCustomPrompt;
+}
+
+function executeCustomPrompt() {
+    const value = document.getElementById('custom-prompt-input').value;
+    closeCustomPrompt();
+    if (customPromptCallback) {
+        customPromptCallback(value);
+        customPromptCallback = null;
+    }
+}
+
+function closeCustomPrompt() {
+    document.getElementById('custom-prompt-modal').classList.remove('active');
+    document.getElementById('overlay').classList.remove('active');
+    document.getElementById('custom-prompt-input').value = '';
+}
+
+/* CUSTOM CONFIRM */
+let customConfirmCallback = null;
+
+function customConfirm(title, message, callback) {
+    document.getElementById('confirm-title').innerText = title;
+    document.getElementById('confirm-message').innerText = message;
+    document.getElementById('custom-confirm-modal').classList.add('active');
+    document.getElementById('overlay').classList.add('active');
+    
+    customConfirmCallback = callback;
+    
+    document.getElementById('custom-confirm-ok').onclick = function() {
+        closeCustomConfirm();
+        if (customConfirmCallback) {
+            customConfirmCallback(true);
+            customConfirmCallback = null;
+        }
+    };
+    
+    document.getElementById('custom-confirm-cancel').onclick = function() {
+        closeCustomConfirm();
+        if (customConfirmCallback) {
+            customConfirmCallback(false);
+            customConfirmCallback = null;
+        }
+    };
+}
+
+function closeCustomConfirm() {
+    document.getElementById('custom-confirm-modal').classList.remove('active');
+    document.getElementById('overlay').classList.remove('active');
+}
+
+/* LOAD DATA DARI LOCAL STORAGE */
+let config = JSON.parse(localStorage.getItem('erp_clean_conf')) || {
+    default: { title: "DASHBOARD UTAMA", category: "UTAMA", order: 0, cols: ["TANGGAL", "KETERANGAN", "DEBIT", "KREDIT", "SALDO"], lastModified: Date.now(), archived: false }
+};
+let dataStore = JSON.parse(localStorage.getItem('erp_clean_data')) || {
+    default: [["2024-01-01", "Saldo Awal", "0", "0", "0"]]
+};
+
+// Migrate old data to include lastModified and archived
+Object.keys(config).forEach(key => {
+    if (!config[key].lastModified) config[key].lastModified = Date.now();
+    if (config[key].archived === undefined) config[key].archived = false;
+});
+
+/* INISIALISASI DATE PICKER */
+const fp = flatpickr("#dateRangePicker", {
+    mode: "range", dateFormat: "Y-m-d",
+    onReady: function(s, d, instance) {
+        const btn = document.createElement("div");
+        btn.innerHTML = "HAPUS FILTER TANGGAL"; btn.className = "flatpickr-clear-button";
+        btn.onclick = () => { dateFilter = {start:"", end:""}; instance.clear(); render(); };
+        instance.calendarContainer.appendChild(btn);
+    },
+    onClose: function(s, dateStr) {
+        if (s.length === 2) {
+            const dates = dateStr.split(" to ");
+            dateFilter.start = dates[0]; dateFilter.end = dates[1]; render();
+        }
+    }
+});
+
+/* FUNGSI AUTH */
+function login() {
+    const p = document.getElementById('p').value;
+    if (p === 'p') { 
+        sessionStorage.setItem('erp_is_logged', 'true'); 
+        sessionStorage.setItem('erp_role', 'admin');
+        location.reload(); 
+    } else { 
+        alert("Password salah!"); 
+    }
+}
+
+function viewMode() {
+    sessionStorage.setItem('erp_is_logged', 'true');
+    sessionStorage.setItem('erp_role', 'viewer');
+    location.reload();
+}
+
+if (sessionStorage.getItem('erp_is_logged') === 'true') {
+    document.getElementById('login-screen').style.display = 'none';
+    const role = sessionStorage.getItem('erp_role');
+    const sidebarHeader = document.getElementById('sidebarHeader');
+    if (role === 'viewer') {
+        sidebarHeader.innerText = 'UNKNOWN | VIEW';
+    } else {
+        sidebarHeader.innerText = 'RIFAKHI RINDHOI SETIAWAN | ADMIN';
+    }
+}
+
+function logout() { sessionStorage.clear(); location.reload(); }
+
+/* UTILITY FUNCTIONS */
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getDataSize(key) {
+    const dataStr = JSON.stringify(dataStore[key] || []);
+    const bytes = new Blob([dataStr]).size;
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+/* FUNGSI RENDER UTAMA */
+function renderSidebar() {
+    const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
+    let html = '';
+    
+    cats.forEach(cat => {
+        const isOpen = openCats.includes(cat);
+        const tables = Object.keys(config)
+            .filter(k => (config[k].category || "UTAMA") === cat && !config[k].archived)
+            .sort((a,b) => (config[a].order || 0) - (config[b].order || 0));
+        const gridIcon = '<span class="grid-icon"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>';
+        html += `<div class="cat-group"><button class="cat-header" onclick="toggleCat('${cat}')"><span style="display:flex;align-items:center;">${gridIcon}${cat}</span></button>
+            <div class="cat-content ${isOpen ? 'active' : ''}">${tables.map(k => `<button class="tab-btn ${activeKey === k ? 'active' : ''}" onclick="switchTab('${k}')">${config[k].title}</button>`).join('')}</div></div>`;
+    });
+    
+    // Archived tables
+    const archivedTables = Object.keys(config).filter(k => config[k].archived);
+    if (archivedTables.length > 0) {
+        const isOpen = openCats.includes('ARSIP');
+        const gridIcon = '<span class="grid-icon"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>';
+        html += `<div class="cat-group"><button class="cat-header" onclick="toggleCat('ARSIP')"><span style="display:flex;align-items:center;">${gridIcon}ARSIP (${archivedTables.length})</span></button>
+            <div class="cat-content ${isOpen ? 'active' : ''}">${archivedTables.map(k => `<button class="tab-btn archived ${activeKey === k ? 'active' : ''}" onclick="switchTab('${k}')">${config[k].title}</button>`).join('')}</div></div>`;
+    }
+    
+    const isSettingsOpen = openCats.includes('PENGATURAN');
+    const gridIcon = '<span class="grid-icon"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>';
+    html += `<div class="cat-group"><button class="cat-header" onclick="toggleCat('PENGATURAN')"><span style="display:flex;align-items:center;">${gridIcon}PENGATURAN</span></button>
+        <div class="cat-content ${isSettingsOpen ? 'active' : ''}">
+            <button class="tab-btn ${isReadOnly ? 'admin-hidden' : ''}" onclick="openTableManager()">MANAJEMEN TABEL</button>
+            <button class="tab-btn" onclick="toggleDarkMode()">GANTI TEMA</button>
+        </div></div>`;
+    
+    document.getElementById('sidebar-content').innerHTML = html;
+}
+
+function render() {
+    renderSidebar(); 
+    
+    if (activeKey === '__management__') {
+        renderManagement();
+        return;
+    }
+    
+    document.querySelector('.toolbar').style.display = 'flex';
+    document.querySelector('.table-container').style.display = 'block';
+    document.querySelector('.nav-box').style.display = 'flex';
+    
+    const isArchived = config[activeKey]?.archived;
+    document.getElementById('disp-title').innerText = config[activeKey].title + (isArchived ? ' (ARSIP)' : '');
+    
+    let allCols = config[activeKey].cols;
+    let hHtml = `<th class="row-num">ID</th>`;
+    allCols.forEach((c, i) => { 
+        hHtml += `<th><div class="th-inner" onclick="${isReadOnly ? '' : `openFilter(${i})`}">${c} ${isReadOnly ? '' : '<span style="font-size:9px;">EDIT</span>'}</div></th>`; 
+    });
+    document.getElementById('table-head').innerHTML = hHtml;
+    
+    let filtered = dataStore[activeKey].map((row, index) => ({row, index}));
+    if(searchQuery) filtered = filtered.filter(i => i.row.some(c => c.toString().toLowerCase().includes(searchQuery.toLowerCase())));
+    if(dateFilter.start && dateFilter.end) filtered = filtered.filter(i => { let d = (i.row[0] || "").trim(); return d >= dateFilter.start && d <= dateFilter.end; });
+    
+    let totalPages = Math.ceil(filtered.length / rowsPerPage) || 1;
+    let paginated = filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    
+    document.getElementById('table-body').innerHTML = paginated.map(item => `<tr>
+        <td class="row-num" onclick="${isReadOnly ? '' : `openPopUp(${item.index})`}">${item.index + 1}</td>
+        ${item.row.map((cell, ci) => `<td><input type="text" value="${cell}" ${isReadOnly ? 'readonly' : ''} oninput="upd(${item.index},${ci},this.value)"></td>`).join('')}
+    </tr>`).join('');
+    
+    document.getElementById('page-info').innerText = `HALAMAN: ${currentPage} / ${totalPages}`;
+    
+    if (isReadOnly) {
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn[onclick="openTableManager()"]').forEach(el => el.style.display = 'none');
+    }
+}
+
+function renderManagement() {
+    document.getElementById('disp-title').innerText = 'MANAJEMEN TABEL';
+    
+    document.querySelector('.toolbar').style.display = 'none';
+    document.querySelector('.nav-box').style.display = 'none';
+    
+    const container = document.querySelector('.table-container');
+    container.style.display = 'block';
+    
+    // Get all tables
+    let allTables = Object.keys(config)
+        .filter(k => k !== '__management__')
+        .map(key => ({
+            key: key,
+            title: config[key].title,
+            category: config[key].category || 'UTAMA',
+            order: config[key].order || 0,
+            cols: config[key].cols.length,
+            rows: dataStore[key] ? dataStore[key].length : 0,
+            lastModified: config[key].lastModified || Date.now(),
+            archived: config[key].archived || false,
+            size: getDataSize(key)
+        }));
+    
+    // Apply search filter
+    if (managementSearchQuery) {
+        allTables = allTables.filter(t => 
+            t.title.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
+            t.category.toLowerCase().includes(managementSearchQuery.toLowerCase())
+        );
+    }
+    
+    // Apply sorting
+    allTables.sort((a, b) => {
+        if (managementSortBy === 'name') {
+            return a.title.localeCompare(b.title);
+        } else if (managementSortBy === 'date') {
+            return b.lastModified - a.lastModified;
+        } else if (managementSortBy === 'size') {
+            const sizeA = JSON.stringify(dataStore[a.key] || []).length;
+            const sizeB = JSON.stringify(dataStore[b.key] || []).length;
+            return sizeB - sizeA;
+        }
+        return 0;
+    });
+    
+    // Calculate statistics
+    const totalTables = allTables.filter(t => !t.archived).length;
+    const totalRows = allTables.reduce((sum, t) => sum + t.rows, 0);
+    const totalCols = allTables.reduce((sum, t) => sum + t.cols, 0);
+    const archivedCount = allTables.filter(t => t.archived).length;
+    
+    // Group by category
+    const grouped = {};
+    allTables.forEach(table => {
+        const cat = table.archived ? 'ARSIP' : table.category;
+        if (!grouped[cat]) grouped[cat] = [];
+        grouped[cat].push(table);
+    });
+    
+    let categoryHTML = '';
+    Object.keys(grouped).forEach(category => {
+        let tablesHTML = '';
+        grouped[category].forEach(table => {
+            const isSelected = selectedTables.has(table.key);
+            tablesHTML += `
+                <div class="management-card ${isSelected ? 'selected' : ''} ${table.archived ? 'archived' : ''}" data-key="${table.key}">
+                    <div style="display: flex; align-items: start; gap: 8px;">
+                        <div class="checkbox-card ${isSelected ? 'checked' : ''}" onclick="toggleSelectTable('${table.key}')"></div>
+                        <div style="flex-grow: 1;">
+                            <div style="font-size: 12px; font-weight: 800; color: var(--primary); margin-bottom: 4px; line-height: 1.2;">
+                                ${table.title}
+                                ${table.archived ? '<span class="badge badge-archive">ARSIP</span>' : ''}
+                            </div>
+                            <div style="display: flex; gap: 10px; font-size: 10px; color: #888; margin-bottom: 4px; flex-wrap: wrap;">
+                                <span><strong style="color: var(--text);">${table.cols}</strong> Kolom</span>
+                                <span><strong style="color: var(--text);">${table.rows}</strong> Baris</span>
+                                <span>${table.category}</span>
+                                <span>${table.size}</span>
+                            </div>
+                            <div style="font-size: 9px; color: #aaa; margin-bottom: 6px;">
+                                ${formatDate(table.lastModified)} ${formatTime(table.lastModified)}
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn-action primary" onclick="previewTable('${table.key}')">PREVIEW</button>
+                                <button class="btn-action" onclick="duplicateTable('${table.key}')">DUPLIKAT</button>
+                                <button class="btn-action" onclick="renameTableByKey('${table.key}')">EDIT</button>
+                                <button class="btn-action" onclick="changeCategoryByKey('${table.key}')">KATEGORI</button>
+                                <button class="btn-action warning" onclick="toggleArchive('${table.key}')">${table.archived ? 'RESTORE' : 'ARSIP'}</button>
+                                <button class="btn-action danger" onclick="deleteTableByKey('${table.key}')">HAPUS</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        categoryHTML += `
+            <div class="category-section">
+                <div class="category-title">
+                    <h3>${category}</h3>
+                    <span class="category-count">${grouped[category].length}</span>
+                </div>
+                ${tablesHTML}
+            </div>
+        `;
+    });
+    
+    container.innerHTML = `
+        <div style="padding: 12px; max-width: 1200px; margin: 0 auto;">
+            <!-- Statistics Summary -->
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-value">${totalTables}</div>
+                    <div class="stat-label">Total Tabel</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalRows}</div>
+                    <div class="stat-label">Total Baris</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalCols}</div>
+                    <div class="stat-label">Total Kolom</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${archivedCount}</div>
+                    <div class="stat-label">Diarsipkan</div>
+                </div>
+            </div>
+            
+            <!-- Search and Filter Bar -->
+            <div class="search-filter-bar">
+                <input type="text" id="mgmt-search" placeholder="Cari tabel..." value="${managementSearchQuery}" oninput="updateManagementSearch(this.value)">
+                <select id="mgmt-sort" onchange="updateManagementSort(this.value)">
+                    <option value="name" ${managementSortBy === 'name' ? 'selected' : ''}>Nama A-Z</option>
+                    <option value="date" ${managementSortBy === 'date' ? 'selected' : ''}>Terbaru</option>
+                    <option value="size" ${managementSortBy === 'size' ? 'selected' : ''}>Terbesar</option>
+                </select>
+            </div>
+            
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-actions-bar ${selectedTables.size > 0 ? 'active' : ''}" id="bulk-actions">
+                <span style="font-size: 11px; font-weight: 700; color: var(--primary); flex-grow: 1;">${selectedTables.size} tabel dipilih</span>
+                <button class="btn-ui" onclick="bulkArchive()">ARSIP</button>
+                <button class="btn-ui" onclick="bulkDelete()" style="color: var(--danger);">HAPUS</button>
+                <button class="btn-ui" onclick="clearSelection()">BATAL</button>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="management-actions">
+                <button class="btn-action-main btn-create" onclick="createNewTable()">+ BUAT</button>
+                <button class="btn-action-main btn-export" onclick="exportAllTables()">EXPORT</button>
+                <button class="btn-action-main btn-backup" onclick="backupAllData()">BACKUP</button>
+                <button class="btn-action-main btn-restore" onclick="document.getElementById('restore-file').click()">RESTORE</button>
+                <input type="file" id="restore-file" hidden accept=".json" onchange="restoreAllData(event)">
+            </div>
+            
+            ${categoryHTML}
+        </div>
+    `;
+}
+
+/* MANAGEMENT FUNCTIONS */
+function updateManagementSearch(value) {
+    managementSearchQuery = value;
+    render();
+}
+
+function updateManagementSort(value) {
+    managementSortBy = value;
+    render();
+}
+
+function toggleSelectTable(key) {
+    if (selectedTables.has(key)) {
+        selectedTables.delete(key);
+    } else {
+        selectedTables.add(key);
+    }
+    render();
+}
+
+function clearSelection() {
+    selectedTables.clear();
+    render();
+}
+
+function bulkArchive() {
+    if (selectedTables.size === 0) return;
+    customConfirm(
+        'ARSIPKAN TABEL',
+        `Arsipkan ${selectedTables.size} tabel yang dipilih?`,
+        function(confirmed) {
+            if (confirmed) {
+                selectedTables.forEach(key => {
+                    config[key].archived = true;
+                    config[key].lastModified = Date.now();
+                });
+                autoSave();
+                clearSelection();
+                showToast(`${selectedTables.size} tabel diarsipkan!`);
+            }
+        }
+    );
+}
+
+function bulkDelete() {
+    if (selectedTables.size === 0) return;
+    customConfirm(
+        'HAPUS TABEL',
+        `PERINGATAN: Hapus ${selectedTables.size} tabel yang dipilih? Data akan hilang permanen!`,
+        function(confirmed) {
+            if (confirmed) {
+                selectedTables.forEach(key => {
+                    delete config[key];
+                    delete dataStore[key];
+                });
+                autoSave();
+                clearSelection();
+                showToast(`${selectedTables.size} tabel dihapus!`);
+            }
+        }
+    );
+}
+
+function duplicateTable(key) {
+    if (!config[key]) return;
+    
+    customPrompt('DUPLIKAT TABEL', 'Nama untuk salinan tabel...', config[key].title + ' (Salinan)', function(newName) {
+        if (newName && newName.trim()) {
+            const newKey = 't' + Date.now();
+            config[newKey] = {
+                ...config[key],
+                title: newName.trim().toUpperCase(),
+                order: 999,
+                lastModified: Date.now(),
+                archived: false
+            };
+            dataStore[newKey] = JSON.parse(JSON.stringify(dataStore[key] || []));
+            autoSave();
+            render();
+            showToast('Tabel berhasil diduplikasi!');
+        }
+    });
+}
+
+function toggleArchive(key) {
+    if (!config[key]) return;
+    config[key].archived = !config[key].archived;
+    config[key].lastModified = Date.now();
+    autoSave();
+    render();
+    showToast(config[key].archived ? 'Tabel diarsipkan!' : 'Tabel di-restore!');
+}
+
+function previewTable(key) {
+    if (!config[key] || !dataStore[key]) return;
+    
+    const table = config[key];
+    const data = dataStore[key];
+    
+    let html = `
+        <div style="margin-bottom: 15px;">
+            <div style="font-size: 16px; font-weight: 700; color: var(--primary); margin-bottom: 5px;">${table.title}</div>
+            <div style="font-size: 12px; color: #888;">
+                ${table.cols.length} kolom × ${data.length} baris | ${table.category}
+            </div>
+        </div>
+        <div class="preview-table">
+            <table style="width: 100%; table-layout: auto;">
+                <thead>
+                    <tr>${table.cols.map(col => `<th>${col}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                    ${data.slice(0, 10).map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+            </table>
+        </div>
+        ${data.length > 10 ? `<div style="text-align: center; margin-top: 10px; font-size: 11px; color: #888;">Menampilkan 10 dari ${data.length} baris</div>` : ''}
+    `;
+    
+    document.getElementById('preview-content').innerHTML = html;
+    document.getElementById('sheet-preview').classList.add('active');
+    document.getElementById('overlay').classList.add('active');
+}
+
+function closePreview() {
+    document.getElementById('sheet-preview').classList.remove('active');
+    document.getElementById('overlay').classList.remove('active');
+}
+
+function exportAllTables() {
+    const wb = XLSX.utils.book_new();
+    
+    Object.keys(config).forEach(key => {
+        if (key === '__management__') return;
+        
+        const table = config[key];
+        const data = dataStore[key] || [];
+        const sheetData = [table.cols, ...data];
+        
+        let sheetName = table.title.substring(0, 31); // Excel limit
+        sheetName = sheetName.replace(/[:\\/?*\[\]]/g, '_'); // Remove invalid chars
+        
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `ERP_All_Tables_${timestamp}.xlsx`);
+    showToast('Semua tabel berhasil di-export!');
+}
+
+function backupAllData() {
+    const backup = {
+        version: '1.0',
+        timestamp: Date.now(),
+        config: config,
+        data: dataStore
+    };
+    
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ERP_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Backup berhasil dibuat!');
+}
+
+function restoreAllData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            
+            if (!backup.config || !backup.data) {
+                alert('File backup tidak valid!');
+                return;
+            }
+            
+            customConfirm(
+                'RESTORE BACKUP',
+                'PERINGATAN: Restore akan menimpa semua data yang ada. Lanjutkan?',
+                function(confirmed) {
+                    if (confirmed) {
+                        config = backup.config;
+                        dataStore = backup.data;
+                        autoSave();
+                        render();
+                        showToast('Data berhasil di-restore!');
+                    }
+                }
+            );
+        } catch (err) {
+            alert('Error membaca file backup: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.classList.add('active');
+    setTimeout(() => {
+        toast.classList.remove('active');
+    }, 3000);
+}
+
+/* FUNGSI MANAJEMEN DATA */
+function autoSave() { 
+    if (isReadOnly) return;
+    // Update lastModified for current table
+    if (activeKey && config[activeKey]) {
+        config[activeKey].lastModified = Date.now();
+    }
+    localStorage.setItem('erp_clean_conf', JSON.stringify(config)); 
+    localStorage.setItem('erp_clean_data', JSON.stringify(dataStore)); 
+}
+
+function updateRowsPerPage(val) { rowsPerPage = parseInt(val); currentPage = 1; render(); }
+
+function toggleCat(cat) {
+    if(openCats.includes(cat)) openCats = openCats.filter(c => c !== cat); else openCats.push(cat);
+    localStorage.setItem('erp_open_cats', JSON.stringify(openCats)); renderSidebar();
+}
+
+function switchTab(k) { activeKey = k; currentPage = 1; render(); closeAll(); }
+
+function upd(r, c, v) { 
+    if(isReadOnly) return; 
+    dataStore[activeKey][r][c] = v; 
+    autoSave(); 
+}
+
+function doSearch() { searchQuery = document.getElementById('searchInp').value; currentPage = 1; render(); }
+
+/* UI CONTROL */
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('overlay').classList.toggle('active'); }
+
+function openPopUp(idx) { if(isReadOnly) return; selectedRowIdx = idx; document.getElementById('sheet-menu').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
+function openFilter(colIdx) { if(isReadOnly) return; selectedColIdx = colIdx; document.getElementById('sheet-filter').classList.add('active'); document.getElementById('overlay').classList.add('active'); }
+
+function openTableManager() { 
+    if(isReadOnly) return; 
+    activeKey = '__management__'; 
+    selectedTables.clear();
+    managementSearchQuery = "";
+    render(); 
+    closeAll(); 
+}
+
+function closeModal() { document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active')); document.getElementById('overlay').classList.remove('active'); }
+
+function closeAll() { closeModal(); document.getElementById('sidebar').classList.remove('active'); }
+
+function toggleDarkMode() { 
+    document.body.classList.toggle('dark-mode'); 
+    localStorage.setItem('erp_dark', document.body.classList.contains('dark-mode')); 
+}
+if(localStorage.getItem('erp_dark') === 'true') document.body.classList.add('dark-mode');
+
+/* AKSI TABEL */
+function handleSortData(dir) { 
+    dataStore[activeKey].sort((a, b) => { 
+        let vA = (a[selectedColIdx] || "").toString(), vB = (b[selectedColIdx] || "").toString(); 
+        return dir === 'asc' ? vA.localeCompare(vB) : vB.localeCompare(vA); 
+    }); 
+    autoSave(); render(); closeModal(); 
+}
+
+function handleExecAction(type) {
+    if (isReadOnly) return;
+    if (type === 'add_row') dataStore[activeKey].push(new Array(config[activeKey].cols.length).fill(""));
+    if (type === 'add_col') { 
+        customPrompt('KOLOM BARU', 'Nama kolom baru...', '', function(n) {
+            if(n && n.trim()){
+                config[activeKey].cols.push(n.trim().toUpperCase()); 
+                dataStore[activeKey].forEach(r=>r.push(""));
+                autoSave();
+                render();
+                closeModal();
+            }
+        });
+        return;
+    }
+    if (type === 'edit_header') { 
+        customPrompt('GANTI NAMA KOLOM', 'Nama baru...', config[activeKey].cols[selectedColIdx], function(n) {
+            if(n && n.trim()) {
+                config[activeKey].cols[selectedColIdx]=n.trim().toUpperCase();
+                autoSave();
+                render();
+                closeModal();
+            }
+        });
+        return;
+    }
+    if (type === 'del_row') dataStore[activeKey].splice(selectedRowIdx, 1);
+    if (type === 'del_col') { config[activeKey].cols.splice(selectedColIdx, 1); dataStore[activeKey].forEach(r=>r.splice(selectedColIdx,1)); }
+    if (type === 'clear_all') {
+        customConfirm('HAPUS SEMUA', 'Hapus semua isi tabel?', function(confirmed) {
+            if (confirmed) {
+                dataStore[activeKey] = [];
+                autoSave();
+                render();
+                closeModal();
+            }
+        });
+        return;
+    }
+    autoSave(); render(); closeModal();
+}
+
+function fillColCurrentDate() { 
+    if(isReadOnly) return; 
+    let d = new Date().toISOString().split('T')[0]; 
+    dataStore[activeKey].forEach(r => r[selectedColIdx] = d); 
+    autoSave(); render(); closeModal(); 
+}
+
+/* EXPORT / IMPORT */
+function exportToExcel() { 
+    let ws = XLSX.utils.aoa_to_sheet([config[activeKey].cols, ...dataStore[activeKey]]); 
+    let wb = XLSX.utils.book_new(); 
+    XLSX.utils.book_append_sheet(wb, ws, "Data"); 
+    XLSX.writeFile(wb, config[activeKey].title + ".xlsx"); 
+}
+
+function importFromExcel(e) { 
+    if(isReadOnly) return; 
+    let f = e.target.files[0]; if(!f) return; 
+    let r = new FileReader(); 
+    r.onload = (ex) => { 
+        let d = new Uint8Array(ex.target.result), wb = XLSX.read(d, {type:'array'}); 
+        let rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1, defval:""}); 
+        if(rows.length > 0) { 
+            config[activeKey].cols = rows[0].map(h => h.toString().toUpperCase()); 
+            rows.shift(); dataStore[activeKey] = rows; autoSave(); render(); 
+        } 
+    }; 
+    r.readAsArrayBuffer(f); 
+}
+
+/* MANAJEMEN TABEL LANJUTAN */
+function openCatPicker() {
+    if(isReadOnly) return;
+    const cats = [...new Set(Object.values(config).map(t => t.category || "UTAMA"))];
+    let html = '<p style="font-size:12px; margin-bottom:10px; color:grey;">Pilih Kategori:</p>';
+    cats.forEach(c => { html += `<div class="cat-item-select" onclick="selectExistingCat('${c}')">FOLDER: ${c}</div>`; });
+    document.getElementById('cat-list-box').innerHTML = html;
+    document.getElementById('sheet-cat-picker').classList.add('active');
+}
+
+function selectExistingCat(catName) { 
+    config[activeKey].category = catName; 
+    autoSave(); 
+    render(); 
+    closeCatPicker(); 
+    closeModal(); 
+}
+
+function applyNewCat() { 
+    let val = document.getElementById('newCatInp').value; 
+    if(val) { 
+        selectExistingCat(val.toUpperCase()); 
+        document.getElementById('newCatInp').value = ""; 
+    } 
+}
+
+function closeCatPicker() { document.getElementById('sheet-cat-picker').classList.remove('active'); }
+
+function renameTable() { 
+    if(isReadOnly) return; 
+    const firstKey = Object.keys(config).find(k => k !== '__management__');
+    if (!firstKey) return;
+    customPrompt('UBAH NAMA TABEL', 'Nama baru...', config[firstKey].title, function(n) {
+        if(n && n.trim()){
+            config[firstKey].title = n.trim().toUpperCase(); 
+            autoSave(); 
+            activeKey = firstKey;
+            render();
+        }
+    });
+}
+
+function moveTable(dir) {
+    if(isReadOnly) return;
+    const firstKey = Object.keys(config).find(k => k !== '__management__');
+    if (!firstKey) return;
+    let keys = Object.keys(config).filter(k => k !== '__management__' && config[k].category === config[firstKey].category).sort((a,b) => (config[a].order || 0) - (config[b].order || 0));
+    let idx = keys.indexOf(firstKey);
+    if(dir==='up' && idx > 0) [config[keys[idx]].order, config[keys[idx-1]].order] = [config[keys[idx-1]].order, config[keys[idx]].order];
+    else if(dir==='down' && idx < keys.length-1) [config[keys[idx]].order, config[keys[idx+1]].order] = [config[keys[idx+1]].order, config[keys[idx]].order];
+    autoSave(); 
+    render();
+}
+
+function createNewTable() { 
+    if(isReadOnly) return;
+    customPrompt('BUAT TABEL BARU', 'Nama tabel...', '', function(n) {
+        if (n && n.trim() !== '') { 
+            let k = 't' + Date.now();
+            const allKeys = Object.keys(config).filter(k => k !== '__management__');
+            const category = allKeys.length > 0 ? config[allKeys[0]].category : 'UTAMA';
+            config[k] = { 
+                title: n.trim().toUpperCase(), 
+                category: category, 
+                order: 99, 
+                cols: ["TANGGAL", "KETERANGAN"],
+                lastModified: Date.now(),
+                archived: false
+            }; 
+            dataStore[k] = [[new Date().toISOString().split('T')[0], ""]]; 
+            autoSave(); 
+            activeKey = '__management__';
+            render();
+            showToast('Tabel baru berhasil dibuat!');
+        }
+    });
+}
+
+function deleteCurrentTable() { 
+    const firstKey = Object.keys(config).find(k => k !== '__management__');
+    if(!isReadOnly && Object.keys(config).length > 1 && firstKey){ 
+        customConfirm('HAPUS TABEL', 'Hapus tabel ini?', function(confirmed) {
+            if (confirmed) {
+                delete config[firstKey]; 
+                delete dataStore[firstKey]; 
+                activeKey = Object.keys(config).find(k => k !== '__management__') || 'default'; 
+                autoSave(); 
+                render();
+            }
+        });
+    } 
+}
+
+function deleteCategory() {
+    if(isReadOnly) return;
+    const cats = [...new Set(Object.values(config).filter(c => c.category).map(t => t.category))];
+    let catList = cats.join(', ');
+    customPrompt('HAPUS KATEGORI', `Ketik nama: ${catList}`, '', function(cat) {
+        if(cat && cat.trim()) {
+            customConfirm(
+                'KONFIRMASI HAPUS KATEGORI',
+                `Hapus kategori "${cat.toUpperCase()}"? Semua tabel akan dipindahkan ke kategori UTAMA.`,
+                function(confirmed) {
+                    if(confirmed) {
+                        Object.keys(config).forEach(k => { 
+                            if(k !== '__management__' && config[k].category === cat.toUpperCase()) 
+                                config[k].category = "UTAMA"; 
+                        });
+                        autoSave();
+                        activeKey = '__management__';
+                        render();
+                    }
+                }
+            );
+        }
+    });
+}
+
+function changePage(p) { 
+    if (activeKey === '__management__') return;
+    if (!dataStore[activeKey]) return;
+    let t = Math.ceil(dataStore[activeKey].length/rowsPerPage) || 1; 
+    if(p >= 1 && p <= t) { currentPage = p; render(); } 
+}
+
+function renameTableByKey(key) {
+    if(isReadOnly) return;
+    customPrompt('UBAH NAMA TABEL', 'Nama baru...', config[key].title, function(n) {
+        if(n && n.trim()) {
+            config[key].title = n.trim().toUpperCase();
+            config[key].lastModified = Date.now();
+            autoSave();
+            render();
+        }
+    });
+}
+
+function changeCategoryByKey(key) {
+    if(isReadOnly) return;
+    const cats = [...new Set(Object.values(config).filter(c => c.category).map(t => t.category))];
+    let catList = cats.join(', ');
+    customPrompt('PINDAH KATEGORI', `Ketik: ${catList} atau buat baru`, config[key].category, function(choice) {
+        if(choice && choice.trim()) {
+            config[key].category = choice.trim().toUpperCase();
+            config[key].lastModified = Date.now();
+            autoSave();
+            render();
+        }
+    });
+}
+
+function deleteTableByKey(key) {
+    if(isReadOnly) return;
+    if(Object.keys(config).filter(k => k !== '__management__').length <= 1) {
+        alert("Tidak bisa menghapus tabel terakhir!");
+        return;
+    }
+    
+    customConfirm(
+        'HAPUS TABEL',
+        `Apakah Anda yakin ingin menghapus tabel "${config[key].title}"? Tindakan ini tidak dapat dibatalkan.`,
+        function(confirmed) {
+            if(confirmed) {
+                delete config[key];
+                delete dataStore[key];
+                selectedTables.delete(key);
+                autoSave();
+                render();
+                showToast('Tabel berhasil dihapus!');
+            }
+        }
+    );
+}
+
+/* Jalankan render pertama kali */
+render();
+</script>
 </body>
 </html>
